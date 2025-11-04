@@ -508,7 +508,7 @@ class SpotifyDataManager:
                 if h.track_id in track_dict
             )
 
-            stats = {
+            listening_stats = {
                 "period_days": days,
                 "start_date": start_date.isoformat(),
                 "end_date": end_date.isoformat(),
@@ -525,7 +525,7 @@ class SpotifyDataManager:
             }
 
             session.close()
-            return stats
+            return listening_stats
 
         except Exception as e:
             print(f"Error getting listening stats: {e}")
@@ -533,13 +533,13 @@ class SpotifyDataManager:
                 session.close()
             return {}
 
-    def export_user_data(self, user_id: str, format: str = "json") -> Optional[str]:
+    def export_user_data(self, user_id: str, export_format: str = "json") -> Optional[str]:
         """
         Export all user data to a file.
 
         Args:
             user_id: Spotify user ID.
-            format: Export format ('json' or 'csv').
+            export_format: Export format ('json' or 'csv').
 
         Returns:
             Path to exported file or None if failed.
@@ -591,11 +591,11 @@ class SpotifyDataManager:
 
             # Generate filename
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"spotify_data_{user_id}_{timestamp}.{format}"
+            filename = f"spotify_data_{user_id}_{timestamp}.{export_format}"
             filepath = Path(self.config.export_dir) / filename
 
             # Export data
-            if format.lower() == "json":
+            if export_format.lower() == "json":
                 with open(filepath, "w", encoding="utf-8") as f:
                     json.dump(export_data, f, indent=2, ensure_ascii=False)
             else:

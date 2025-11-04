@@ -312,9 +312,12 @@ class HistoricalStatsAnalyzer:
                 # Define mood categories based on audio features
                 mood_scores = self._calculate_mood_scores(audio_features)
 
+                # Get dominant mood safely
+                dominant_mood = max(mood_scores.keys(), key=lambda mood: mood_scores[mood])
+
                 mood_analysis["time_ranges"][time_range] = {
                     "mood_scores": mood_scores,
-                    "dominant_mood": max(mood_scores, key=lambda x: mood_scores[x]),
+                    "dominant_mood": dominant_mood,
                     "energy_level": audio_features.get("avg_energy", 0),
                     "happiness_level": audio_features.get("avg_valence", 0),
                     "danceability": audio_features.get("avg_danceability", 0),
@@ -456,7 +459,7 @@ class HistoricalStatsAnalyzer:
         stable_artists = long_term_artists & medium_term_artists & short_term_artists
         for artist_id in stable_artists:
             artist_name = artist_rankings["long_term"][artist_id]["name"]
-            evolution["stable_favorites"].append(
+            artist_evolution["stable_favorites"].append(
                 {
                     "name": artist_name,
                     "id": artist_id,
@@ -473,7 +476,7 @@ class HistoricalStatsAnalyzer:
         for artist_id in new_artists:
             if artist_id in artist_rankings.get("short_term", {}):
                 artist_name = artist_rankings["short_term"][artist_id]["name"]
-                evolution["new_discoveries"].append(
+                artist_evolution["new_discoveries"].append(
                     {
                         "name": artist_name,
                         "id": artist_id,
@@ -529,7 +532,8 @@ class HistoricalStatsAnalyzer:
         for value in values:
             if value > 0:
                 probability = value / total
-                entropy -= probability * (probability.bit_length() - 1)
+                import math
+                entropy -= probability * math.log2(probability)
 
         return entropy
 

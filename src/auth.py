@@ -14,12 +14,10 @@ from dotenv import load_dotenv
 
 class SpotifyAuthError(Exception):
     """Custom exception for Spotify authentication errors."""
-    pass
 
 
 class SpotifyTokenError(Exception):
     """Custom exception for Spotify token-related errors."""
-    pass
 
 
 # Load environment variables
@@ -183,8 +181,8 @@ def get_authenticated_spotify() -> spotipy.Spotify:
     Returns:
         Authenticated Spotify client instance.
     """
-    auth = SpotifyAuthenticator()
-    return auth.authenticate()
+    authenticator = SpotifyAuthenticator()
+    return authenticator.authenticate()
 
 
 if __name__ == "__main__":
@@ -201,5 +199,5 @@ if __name__ == "__main__":
         else:
             print("Authentication successful but couldn't get user info.")
 
-    except Exception as e:
+    except (SpotifyAuthError, SpotifyTokenError, ValueError) as e:
         print(f"Authentication failed: {e}")
