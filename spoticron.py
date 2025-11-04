@@ -36,30 +36,15 @@ def show_banner():
     from rich.align import Align
     from rich.text import Text
 
-    # Create gradient-like effect with different shades of green
-    title = Text()
-    title.append("🎵 ", style="bold bright_green")
-    title.append("S", style="bold bright_green")
-    title.append("P", style="bold green")
-    title.append("O", style="bold bright_green")
-    title.append("T", style="bold green")
-    title.append("I", style="bold bright_green")
-    title.append("C", style="bold green")
-    title.append("R", style="bold bright_green")
-    title.append("O", style="bold green")
-    title.append("N", style="bold bright_green")
-    title.append(" 🎧", style="bold bright_green")
-
     subtitle = Text("Spotify Analytics & Insights Tool", style="italic bright_white")
-    tagline = Text("🎶 Discover your musical journey 🎶", style="dim bright_cyan")
 
     console.print()
     console.print(
         Panel(
-            Align.center(f"{title}\n\n{subtitle}\n{tagline}"),
+            Align.center(subtitle),
             border_style="bright_green",
             padding=(1, 2),
-            title="[bold bright_white]Welcome[/bold bright_white]",
+            title="[bold bright_white]SPOTICRON[/bold bright_white]",
             title_align="center",
         )
     )

@@ -368,46 +368,55 @@ def print_current_track(track: CurrentTrack):
         (track.progress_ms / track.duration_ms) * 100 if track.duration_ms > 0 else 0
     )
 
-    # Create a beautiful track info display
-    track_info = Table.grid(padding=1)
-    track_info.add_column(style="cyan", justify="right")
+    # Create a beautiful track info display with consistent spacing
+    track_info = Table.grid(padding=(0, 1))
+    track_info.add_column(style="cyan", width=4, justify="center")
     track_info.add_column(style="white")
 
-    # Add track details with icons
-    track_info.add_row("🎵", f"[bold green]{track.track_name}[/bold green]")
+    # Add track details with consistent icons and spacing
+    track_info.add_row("🎵", f"[bold bright_white]{track.track_name}[/bold bright_white]")
+    track_info.add_row("", "")  # Spacing
     track_info.add_row(
-        "👨‍🎤", f"[bold yellow]{', '.join(track.artist_names)}[/bold yellow]"
+        "�", f"[bright_yellow]{', '.join(track.artist_names)}[/bright_yellow]"
     )
-    track_info.add_row("💿", f"[dim]{track.album_name}[/dim]")
+    track_info.add_row("", "")  # Spacing
+    track_info.add_row("💿", f"[dim bright_white]{track.album_name}[/dim bright_white]")
+    track_info.add_row("", "")  # Spacing
 
-    # Status with animated indicator
+    # Status with consistent styling
     status_icon = "▶️" if track.is_playing else "⏸️"
     status_text = (
-        "[green]Playing[/green]" if track.is_playing else "[yellow]Paused[/yellow]"
+        "[bright_green]Playing[/bright_green]" if track.is_playing else "[bright_yellow]Paused[/bright_yellow]"
     )
     track_info.add_row(status_icon, status_text)
+    track_info.add_row("", "")  # Spacing
 
-    # Progress bar
+    # Time display
+    current_time = f"[bright_cyan]{format_duration(track.progress_ms)}[/bright_cyan]"
+    total_time = f"[dim]{format_duration(track.duration_ms)}[/dim]"
+    track_info.add_row("⏱️", f"{current_time} / {total_time}")
+    track_info.add_row("", "")  # Spacing
+
+    # Progress bar with better visual
+    progress_blocks = int(progress_pct // 2)
+    remaining_blocks = 50 - progress_blocks
     progress_bar = (
-        f"[blue]{'█' * int(progress_pct // 2)}[/blue]"
-        + f"[dim]{'░' * (50 - int(progress_pct // 2))}[/dim]"
+        f"[bright_green]{'█' * progress_blocks}[/bright_green]"
+        + f"[dim]{'░' * remaining_blocks}[/dim]"
     )
-
-    track_info.add_row(
-        "⏱️",
-        f"{format_duration(track.progress_ms)} / {format_duration(track.duration_ms)}",
-    )
-    track_info.add_row("", f"{progress_bar} [dim]{progress_pct:.1f}%[/dim]")
+    track_info.add_row("📊", f"{progress_bar} [bright_cyan]{progress_pct:.1f}%[/bright_cyan]")
+    track_info.add_row("", "")  # Spacing
 
     # Popularity with stars
-    stars = "⭐" * (track.popularity // 20) + "☆" * (5 - (track.popularity // 20))
-    track_info.add_row("📊", f"{stars} [dim]({track.popularity}/100)[/dim]")
+    full_stars = track.popularity // 20
+    stars = "⭐" * full_stars + "☆" * (5 - full_stars)
+    track_info.add_row("⭐", f"{stars} [dim]({track.popularity}/100)[/dim]")
 
     # Create main panel
     panel = Panel(
         track_info,
-        title="[bold cyan]♪ Now Playing ♪[/bold cyan]",
-        border_style="green",
+        title="[bold bright_cyan]♪ Now Playing ♪[/bold bright_cyan]",
+        border_style="bright_green",
         padding=(1, 2),
         expand=False,
     )
