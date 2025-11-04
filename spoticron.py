@@ -33,15 +33,37 @@ console = Console()
 
 def show_banner():
     """Display the application banner."""
-    banner = """
-╔═══════════════════════════════════════════════════════════════╗
-║                          SPOTICRON                           ║
-║                   Spotify Analytics Tool                     ║
-║                                                               ║
-║          Get insights into your Spotify listening habits     ║
-╚═══════════════════════════════════════════════════════════════╝
-    """
-    console.print(banner, style="bold green")
+    from rich.align import Align
+    from rich.text import Text
+
+    # Create gradient-like effect with different shades of green
+    title = Text()
+    title.append("🎵 ", style="bold bright_green")
+    title.append("S", style="bold bright_green")
+    title.append("P", style="bold green")
+    title.append("O", style="bold bright_green")
+    title.append("T", style="bold green")
+    title.append("I", style="bold bright_green")
+    title.append("C", style="bold green")
+    title.append("R", style="bold bright_green")
+    title.append("O", style="bold green")
+    title.append("N", style="bold bright_green")
+    title.append(" 🎧", style="bold bright_green")
+
+    subtitle = Text("Spotify Analytics & Insights Tool", style="italic bright_white")
+    tagline = Text("🎶 Discover your musical journey 🎶", style="dim bright_cyan")
+
+    console.print()
+    console.print(
+        Panel(
+            Align.center(f"{title}\n\n{subtitle}\n{tagline}"),
+            border_style="bright_green",
+            padding=(1, 2),
+            title="[bold bright_white]Welcome[/bold bright_white]",
+            title_align="center",
+        )
+    )
+    console.print()
 
 
 def handle_auth_error(func):
