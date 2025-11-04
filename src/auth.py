@@ -29,7 +29,7 @@ class SpotifyAuthenticator:
         self.client_id = os.getenv("SPOTIFY_CLIENT_ID")
         self.client_secret = os.getenv("SPOTIFY_CLIENT_SECRET")
         self.redirect_uri = os.getenv(
-            "SPOTIFY_REDIRECT_URI", "http://localhost:8080/callback"
+            "SPOTIFY_REDIRECT_URI", "https://localhost:8080/callback"
         )
 
         if not self.client_id or not self.client_secret:

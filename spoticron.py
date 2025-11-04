@@ -520,12 +520,12 @@ def setup():
    - Client ID
    - Client Secret
 6. In your app settings, add this redirect URI:
-   - http://localhost:8080/callback
+   - https://localhost:8080/callback
 
 7. Create a .env file in this directory with:
    SPOTIFY_CLIENT_ID=your_client_id_here
    SPOTIFY_CLIENT_SECRET=your_client_secret_here
-   SPOTIFY_REDIRECT_URI=http://localhost:8080/callback
+   SPOTIFY_REDIRECT_URI=https://localhost:8080/callback
 
 8. Run 'spoticron auth' to test your setup
     """
