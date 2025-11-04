@@ -1,5 +1,14 @@
 # Spoticron - Spotify Analytics Tool
 
+<div align="center">
+  <img src="assets/spoticron.png" alt="Spoticron Logo" width="300"/>
+  
+  [![GitHub release](https://img.shields.io/github/v/release/ryanlong1004/spoticron)](https://github.com/ryanlong1004/spoticron/releases)
+  [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+  [![Spotify API](https://img.shields.io/badge/Spotify-API-1DB954.svg)](https://developer.spotify.com/documentation/web-api/)
+</div>
+
 A comprehensive command-line tool for analyzing your Spotify listening habits with both live statistics and historical analysis.
 
 ## Features
@@ -42,7 +51,7 @@ A comprehensive command-line tool for analyzing your Spotify listening habits wi
    - **App Name**: Spoticron (or any name you prefer)
    - **App Description**: Personal Spotify analytics tool
 5. After creating the app, note down your **Client ID** and **Client Secret**
-6. In your app settings, add this redirect URI: `http://localhost:8080/callback`
+6. In your app settings, add this redirect URI: `http://127.0.0.1:8080`
 
 ## Configuration
 
@@ -57,7 +66,7 @@ A comprehensive command-line tool for analyzing your Spotify listening habits wi
    ```env
    SPOTIFY_CLIENT_ID=your_client_id_here
    SPOTIFY_CLIENT_SECRET=your_client_secret_here
-   SPOTIFY_REDIRECT_URI=http://localhost:8080/callback
+   SPOTIFY_REDIRECT_URI=http://127.0.0.1:8080
    ```
 
 3. **Test your setup**:
@@ -198,7 +207,7 @@ spoticron/
 ### Authentication Issues
 
 - Verify your Client ID and Client Secret are correct
-- Ensure the redirect URI matches exactly: `http://localhost:8080/callback`
+- Ensure the redirect URI matches exactly: `http://127.0.0.1:8080`
 - Check that your app has the necessary scopes enabled
 
 ### Permission Errors
