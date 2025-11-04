@@ -337,6 +337,232 @@ class LiveStatsCollector:
 
         return snapshots
 
+    def monitor_enhanced(
+        self,
+        duration_minutes: int = 10,
+        interval_seconds: int = 5,
+        previous_tracks: int = 3,
+        next_tracks: int = 3,
+    ) -> None:
+        """
+        Enhanced monitoring with smart updates and queue display.
+
+        Args:
+            duration_minutes: How long to monitor (in minutes).
+            interval_seconds: How often to check (in seconds).
+            previous_tracks: Number of previous tracks to show.
+            next_tracks: Number of upcoming tracks to show.
+        """
+        console = Console()
+        start_time = time.time()
+        end_time = start_time + (duration_minutes * 60)
+        
+        # Track previous state to avoid unnecessary updates
+        last_track_id = None
+        last_progress = 0
+        
+        console.print("🎵 Enhanced Monitoring Mode Started", style="bold green")
+        console.print(f"⏱️  Duration: {duration_minutes} minutes | Update interval: {interval_seconds}s")
+        console.print("")
+
+        try:
+            while time.time() < end_time:
+                current = self.get_current_track()
+                
+                # Check if we need to update the display
+                current_track_id = current.track_id if current else None
+                current_progress = current.progress_ms if current else 0
+                
+                # Only update display if track changed or significant progress change
+                progress_change = abs(current_progress - last_progress) > 10000  # 10 seconds
+                track_changed = current_track_id != last_track_id
+                
+                if track_changed or progress_change or last_track_id is None:
+                    # Clear screen and update display
+                    console.clear()
+                    self._display_enhanced_monitoring(
+                        console, current, previous_tracks, next_tracks
+                    )
+                    
+                    last_track_id = current_track_id
+                    last_progress = current_progress
+                
+                time.sleep(interval_seconds)
+                
+        except KeyboardInterrupt:
+            console.print("\n🛑 Monitoring stopped by user", style="bold red")
+        
+        console.print(f"\n✅ Monitoring completed after {duration_minutes} minutes", style="bold green")
+
+    def _display_enhanced_monitoring(
+        self,
+        console: Console,
+        current: Optional[CurrentTrack],
+        previous_tracks: int,
+        next_tracks: int,
+    ) -> None:
+        """Display the enhanced monitoring layout."""
+        # Header
+        header_line = "─" * 80
+        console.print(f"╭{header_line}╮", style="bold blue")
+        console.print("│" + " " * 30 + "Enhanced Monitoring Mode" + " " * 26 + "│", style="bold blue")
+        console.print(f"╰{header_line}╯", style="bold blue")
+        console.print("")
+        
+        # Three-column layout using Rich layout
+        from rich.columns import Columns
+        
+        # Get data for all sections
+        recent_tracks = self._get_recent_tracks_for_monitoring(previous_tracks)
+        upcoming_tracks = self._get_upcoming_tracks_for_monitoring(next_tracks)
+        
+        # Create panels for each section
+        recent_panel = self._create_recent_tracks_panel(recent_tracks)
+        current_panel = self._create_current_track_panel(current)
+        upcoming_panel = self._create_upcoming_tracks_panel(upcoming_tracks)
+        
+        # Display in columns
+        columns = Columns([recent_panel, current_panel, upcoming_panel], equal=True)
+        console.print(columns)
+        
+        # Footer with controls
+        console.print("")
+        console.print("💡 Press Ctrl+C to stop monitoring", style="dim italic")
+
+    def _get_recent_tracks_for_monitoring(self, limit: int) -> List[Dict[str, Any]]:
+        """Get recent tracks for monitoring display."""
+        try:
+            recent = self.spotify.current_user_recently_played(limit=limit)
+            return [
+                {
+                    "name": item["track"]["name"],
+                    "artists": [artist["name"] for artist in item["track"]["artists"]],
+                    "played_at": item["played_at"],
+                }
+                for item in recent["items"]
+            ]
+        except Exception as e:
+            print(f"Error getting recent tracks: {e}")
+            return []
+
+    def _get_upcoming_tracks_for_monitoring(self, limit: int) -> List[Dict[str, Any]]:
+        """Get upcoming tracks in queue for monitoring display."""
+        try:
+            queue = self.spotify.queue()
+            upcoming = []
+            
+            # Get tracks from queue
+            for item in queue.get("queue", [])[:limit]:
+                if item and item.get("name"):
+                    upcoming.append({
+                        "name": item["name"],
+                        "artists": [artist["name"] for artist in item.get("artists", [])],
+                    })
+            
+            # If queue is empty or insufficient, show placeholder
+            while len(upcoming) < limit:
+                upcoming.append({
+                    "name": "No upcoming tracks",
+                    "artists": ["Queue is empty"],
+                })
+            
+            return upcoming
+        except Exception as e:
+            print(f"Error getting queue: {e}")
+            return [{"name": "Queue unavailable", "artists": ["Error fetching queue"]} for _ in range(limit)]
+
+    def _create_recent_tracks_panel(self, recent_tracks: List[Dict[str, Any]]) -> Panel:
+        """Create panel for recent tracks."""
+        if not recent_tracks:
+            content = "[dim]No recent tracks available[/dim]"
+        else:
+            lines = []
+            for i, track in enumerate(recent_tracks, 1):
+                artist_str = ", ".join(track["artists"])
+                lines.append(f"{i}. [bold]{track['name']}[/bold]")
+                lines.append(f"   [dim]{artist_str}[/dim]")
+            content = "\n".join(lines)
+        
+        return Panel(
+            content,
+            title="🕐 Recent Tracks",
+            title_align="left",
+            border_style="green",
+            padding=(1, 1),
+        )
+
+    def _create_current_track_panel(self, current: Optional[CurrentTrack]) -> Panel:
+        """Create panel for current track."""
+        if not current:
+            content = "[dim]No track currently playing[/dim]"
+        else:
+            artist_str = ", ".join(current.artist_names)
+            status = "▶️ Playing" if current.is_playing else "⏸️ Paused"
+            progress = self._format_progress_bar(current.progress_ms, current.duration_ms)
+            
+            content = f"""[bold green]🎵 {current.track_name}[/bold green]
+
+[dim]👤 {artist_str}[/dim]
+
+[dim]💿 {current.album_name}[/dim]
+
+{status}
+
+⏱️ {format_duration(current.progress_ms)} / {format_duration(current.duration_ms)}
+
+{progress}
+
+⭐ {self._format_popularity_stars(current.popularity)}"""
+        
+        return Panel(
+            content,
+            title="🎵 Now Playing",
+            title_align="left",
+            border_style="bright_blue",
+            padding=(1, 1),
+        )
+
+    def _create_upcoming_tracks_panel(self, upcoming_tracks: List[Dict[str, Any]]) -> Panel:
+        """Create panel for upcoming tracks."""
+        if not upcoming_tracks:
+            content = "[dim]No upcoming tracks in queue[/dim]"
+        else:
+            lines = []
+            for i, track in enumerate(upcoming_tracks, 1):
+                artist_str = ", ".join(track["artists"])
+                if track["name"] == "No upcoming tracks":
+                    lines.append(f"[dim]{track['name']}[/dim]")
+                else:
+                    lines.append(f"{i}. [bold]{track['name']}[/bold]")
+                    lines.append(f"   [dim]{artist_str}[/dim]")
+            content = "\n".join(lines)
+        
+        return Panel(
+            content,
+            title="⏭️ Up Next",
+            title_align="left",
+            border_style="yellow",
+            padding=(1, 1),
+        )
+
+    def _format_progress_bar(self, progress_ms: int, duration_ms: int) -> str:
+        """Create a progress bar for the current track."""
+        if duration_ms == 0:
+            return "📊 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0.0%"
+        
+        percentage = (progress_ms / duration_ms) * 100
+        filled_blocks = int((percentage / 100) * 40)
+        bar = "█" * filled_blocks + "░" * (40 - filled_blocks)
+        
+        return f"📊 {bar} {percentage:.1f}%"
+
+    def _format_popularity_stars(self, popularity: int) -> str:
+        """Format popularity as star rating."""
+        stars = int(popularity / 20)  # Convert 0-100 to 0-5 stars
+        full_stars = "⭐" * stars
+        empty_stars = "☆" * (5 - stars)
+        return f"{full_stars}{empty_stars} ({popularity}/100)"
+
 
 def format_duration(duration_ms: int) -> str:
     """

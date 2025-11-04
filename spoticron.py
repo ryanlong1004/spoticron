@@ -372,40 +372,55 @@ def analyze(export):
 
 
 @cli.command()
-@click.option("--duration", "-d", default=5, help="Monitoring duration in minutes")
-@click.option("--interval", "-i", default=30, help="Check interval in seconds")
-def monitor(duration, interval):
-    """Monitor your listening activity in real-time."""
-    console.print(f"🎧 Monitoring listening activity for {duration} minutes...")
-    console.print("Press Ctrl+C to stop monitoring\n")
-
+@click.option(
+    "--duration",
+    "-d",
+    default=10,
+    help="Duration to monitor in minutes (default: 10)",
+)
+@click.option(
+    "--interval",
+    "-i",
+    default=5,
+    help="Update interval in seconds (default: 5)",
+)
+@click.option(
+    "--previous-tracks",
+    "-p",
+    default=3,
+    help="Number of previous tracks to show (default: 3)",
+)
+@click.option(
+    "--next-tracks",
+    "-n",
+    default=3,
+    help="Number of upcoming tracks to show (default: 3)",
+)
+def monitor(duration, interval, previous_tracks, next_tracks):
+    """Enhanced monitoring mode with smart updates and queue display."""
+    show_banner()
+    
     try:
-        collector = LiveStatsCollector()
-        snapshots = collector.monitor_listening(duration, interval)
-
-        console.print(
-            f"\n✅ Monitoring completed. Captured {len(snapshots)} snapshots."
+        live_stats = LiveStatsCollector()
+        
+        console.print("🎵 Starting enhanced monitoring mode...", style="bold green")
+        console.print(f"⏱️  Duration: {duration} minutes")
+        console.print(f"🔄 Update interval: {interval} seconds")
+        console.print(f"📜 Previous tracks: {previous_tracks}")
+        console.print(f"⏭️  Next tracks: {next_tracks}")
+        console.print("")
+        
+        live_stats.monitor_enhanced(
+            duration_minutes=duration,
+            interval_seconds=interval,
+            previous_tracks=previous_tracks,
+            next_tracks=next_tracks,
         )
-
-        # Show summary
-        playing_snapshots = [s for s in snapshots if s.get("is_playing")]
-        unique_tracks = set()
-
-        for snapshot in playing_snapshots:
-            track = snapshot.get("current_track")
-            if track:
-                unique_tracks.add(track["track_id"])
-
-        console.print("📊 Summary:")
-        console.print(
-            f"  • Active listening time: {len(playing_snapshots) * interval / 60:.1f} minutes"
-        )
-        console.print(f"  • Unique tracks played: {len(unique_tracks)}")
-
+        
     except KeyboardInterrupt:
-        console.print("\n⏹️  Monitoring stopped by user", style="yellow")
+        console.print("\n🛑 Monitoring stopped by user", style="bold red")
     except Exception as e:
-        console.print(f"❌ Error during monitoring: {e}", style="red")
+        console.print(f"❌ Monitoring error: {e}", style="red")
 
 
 @cli.command()
@@ -484,6 +499,58 @@ def auth():
         except Exception as e:
             progress.remove_task(task)
             console.print(f"❌ Authentication error: {e}", style="red")
+
+
+@cli.command()
+@click.option(
+    "--duration",
+    "-d",
+    default=10,
+    help="Duration to monitor in minutes (default: 10)",
+)
+@click.option(
+    "--interval",
+    "-i",
+    default=5,
+    help="Update interval in seconds (default: 5)",
+)
+@click.option(
+    "--previous-tracks",
+    "-p",
+    default=3,
+    help="Number of previous tracks to show (default: 3)",
+)
+@click.option(
+    "--next-tracks",
+    "-n",
+    default=3,
+    help="Number of upcoming tracks to show (default: 3)",
+)
+def monitor(duration, interval, previous_tracks, next_tracks):
+    """Enhanced monitoring mode with smart updates and queue display."""
+    show_banner()
+    
+    try:
+        live_stats = LiveStatsCollector()
+        
+        console.print("🎵 Starting enhanced monitoring mode...", style="bold green")
+        console.print(f"⏱️  Duration: {duration} minutes")
+        console.print(f"🔄 Update interval: {interval} seconds")
+        console.print(f"📜 Previous tracks: {previous_tracks}")
+        console.print(f"⏭️  Next tracks: {next_tracks}")
+        console.print("")
+        
+        live_stats.monitor_enhanced(
+            duration_minutes=duration,
+            interval_seconds=interval,
+            previous_tracks=previous_tracks,
+            next_tracks=next_tracks,
+        )
+        
+    except KeyboardInterrupt:
+        console.print("\n🛑 Monitoring stopped by user", style="bold red")
+    except Exception as e:
+        console.print(f"❌ Monitoring error: {e}", style="red")
 
 
 @cli.command()
