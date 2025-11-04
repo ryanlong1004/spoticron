@@ -88,27 +88,19 @@ def cli():
 @cli.command()
 def current():
     """Show currently playing track information."""
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        console=console,
-    ) as progress:
-        task = progress.add_task("Getting current track...", total=None)
+    console.print("🎵 Getting current track...", style="dim")
+    
+    try:
+        collector = LiveStatsCollector()
+        current_track = collector.get_current_track()
 
-        try:
-            collector = LiveStatsCollector()
-            current_track = collector.get_current_track()
+        if current_track:
+            print_current_track(current_track)
+        else:
+            console.print("🔇 No track currently playing", style="yellow")
 
-            progress.remove_task(task)
-
-            if current_track:
-                print_current_track(current_track)
-            else:
-                console.print("🔇 No track currently playing", style="yellow")
-
-        except Exception as e:
-            progress.remove_task(task)
-            console.print(f"❌ Error getting current track: {e}", style="red")
+    except Exception as e:
+        console.print(f"❌ Error getting current track: {e}", style="red")
 
 
 @cli.command()
@@ -128,6 +120,7 @@ def recent(limit, detailed):
             recent_tracks = collector.get_recently_played(limit)
 
             progress.remove_task(task)
+            console.print()  # Add clean line break
 
             if recent_tracks:
                 table = Table(title=f"🕒 Last {len(recent_tracks)} Played Tracks")
