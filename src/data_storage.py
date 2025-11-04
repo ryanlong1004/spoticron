@@ -206,7 +206,7 @@ class SpotifyDataManager:
 
         self.config = config
         self.engine = create_engine(config.database_url)
-        self.Session = sessionmaker(bind=self.engine)
+        self.session_factory = sessionmaker(bind=self.engine)
 
         # Create directories
         Path(config.backup_dir).mkdir(parents=True, exist_ok=True)
@@ -226,7 +226,7 @@ class SpotifyDataManager:
             True if successful, False otherwise.
         """
         try:
-            session = self.Session()
+            session = self.session_factory()
 
             user = session.query(User).filter_by(id=user_data["id"]).first()
 
@@ -270,7 +270,7 @@ class SpotifyDataManager:
             True if successful, False otherwise.
         """
         try:
-            session = self.Session()
+            session = self.session_factory()
 
             # Check if track already exists
             existing_track = session.query(Track).filter_by(id=track_data["id"]).first()
@@ -312,7 +312,7 @@ class SpotifyDataManager:
             True if successful, False otherwise.
         """
         try:
-            session = self.Session()
+            session = self.session_factory()
 
             for item in listening_data:
                 # Parse played_at timestamp
@@ -368,7 +368,7 @@ class SpotifyDataManager:
             True if successful, False otherwise.
         """
         try:
-            session = self.Session()
+            session = self.session_factory()
             recorded_at = datetime.utcnow()
 
             for time_range, data in top_data.get("time_ranges", {}).items():
@@ -421,7 +421,7 @@ class SpotifyDataManager:
             True if successful, False otherwise.
         """
         try:
-            session = self.Session()
+            session = self.session_factory()
 
             for features in features_data:
                 if not features or not features.get("id"):
@@ -475,7 +475,7 @@ class SpotifyDataManager:
             Dictionary with listening statistics.
         """
         try:
-            session = self.Session()
+            session = self.session_factory()
 
             # Calculate date range
             end_date = datetime.utcnow()
@@ -545,7 +545,7 @@ class SpotifyDataManager:
             Path to exported file or None if failed.
         """
         try:
-            session = self.Session()
+            session = self.session_factory()
 
             # Get all user data
             user = session.query(User).filter_by(id=user_id).first()
@@ -650,7 +650,7 @@ class SpotifyDataManager:
             True if successful, False otherwise.
         """
         try:
-            session = self.Session()
+            session = self.session_factory()
             cutoff_date = datetime.utcnow() - timedelta(days=days_to_keep)
 
             # Delete old listening history

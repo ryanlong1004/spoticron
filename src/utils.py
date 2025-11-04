@@ -32,8 +32,7 @@ def format_duration(milliseconds: int) -> str:
 
     if hours > 0:
         return f"{hours}:{remaining_minutes:02d}:{remaining_seconds:02d}"
-    else:
-        return f"{remaining_minutes}:{remaining_seconds:02d}"
+    return f"{remaining_minutes}:{remaining_seconds:02d}"
 
 
 def format_number(number: int) -> str:
@@ -51,10 +50,9 @@ def format_number(number: int) -> str:
 
     if number >= 1_000_000:
         return f"{number / 1_000_000:.1f}M"
-    elif number >= 1_000:
+    if number >= 1_000:
         return f"{number / 1_000:.1f}K"
-    else:
-        return str(number)
+    return str(number)
 
 
 def calculate_listening_time_stats(durations: List[int]) -> Dict[str, Any]:
