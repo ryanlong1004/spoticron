@@ -402,10 +402,11 @@ class LiveStatsCollector:
         next_tracks: int,
     ) -> None:
         """Display the enhanced monitoring layout."""
-        # Header
-        header_line = "─" * 80
+        # Header with better spacing
+        console.print("")
+        header_line = "─" * 70
         console.print(f"╭{header_line}╮", style="bold blue")
-        console.print("│" + " " * 30 + "Enhanced Monitoring Mode" + " " * 26 + "│", style="bold blue")
+        console.print("│" + " " * 22 + "Enhanced Monitoring Mode" + " " * 22 + "│", style="bold blue")
         console.print(f"╰{header_line}╯", style="bold blue")
         console.print("")
         
@@ -421,8 +422,8 @@ class LiveStatsCollector:
         current_panel = self._create_current_track_panel(current)
         upcoming_panel = self._create_upcoming_tracks_panel(upcoming_tracks)
         
-        # Display in columns
-        columns = Columns([recent_panel, current_panel, upcoming_panel], equal=True)
+        # Display in columns with consistent spacing
+        columns = Columns([recent_panel, current_panel, upcoming_panel], equal=True, expand=True)
         console.print(columns)
         
         # Footer with controls
@@ -432,6 +433,8 @@ class LiveStatsCollector:
     def _get_recent_tracks_for_monitoring(self, limit: int) -> List[Dict[str, Any]]:
         """Get recent tracks for monitoring display."""
         try:
+            if not self.spotify:
+                return []
             recent = self.spotify.current_user_recently_played(limit=limit)
             return [
                 {
@@ -448,6 +451,9 @@ class LiveStatsCollector:
     def _get_upcoming_tracks_for_monitoring(self, limit: int) -> List[Dict[str, Any]]:
         """Get upcoming tracks in queue for monitoring display."""
         try:
+            if not self.spotify:
+                return [{"name": "Queue unavailable", "artists": ["Not authenticated"]} for _ in range(limit)]
+            
             queue = self.spotify.queue()
             upcoming = []
             
@@ -474,13 +480,20 @@ class LiveStatsCollector:
     def _create_recent_tracks_panel(self, recent_tracks: List[Dict[str, Any]]) -> Panel:
         """Create panel for recent tracks."""
         if not recent_tracks:
-            content = "[dim]No recent tracks available[/dim]"
+            content = "\n[dim]No recent tracks available[/dim]\n"
         else:
-            lines = []
+            lines = [""]  # Start with empty line for consistent spacing
             for i, track in enumerate(recent_tracks, 1):
                 artist_str = ", ".join(track["artists"])
-                lines.append(f"{i}. [bold]{track['name']}[/bold]")
-                lines.append(f"   [dim]{artist_str}[/dim]")
+                # Truncate long names for better display
+                track_name = track["name"][:28] + "..." if len(track["name"]) > 28 else track["name"]
+                artist_name = artist_str[:28] + "..." if len(artist_str) > 28 else artist_str
+                
+                lines.append(f"{i}. [bold]{track_name}[/bold]")
+                lines.append(f"   [dim]{artist_name}[/dim]")
+                if i < len(recent_tracks):  # Add spacing between tracks except last
+                    lines.append("")
+            lines.append("")  # End with empty line for consistent spacing
             content = "\n".join(lines)
         
         return Panel(
@@ -488,53 +501,71 @@ class LiveStatsCollector:
             title="🕐 Recent Tracks",
             title_align="left",
             border_style="green",
-            padding=(1, 1),
+            padding=(0, 1),
+            height=12,  # Fixed height for uniformity
         )
 
     def _create_current_track_panel(self, current: Optional[CurrentTrack]) -> Panel:
         """Create panel for current track."""
         if not current:
-            content = "[dim]No track currently playing[/dim]"
+            content = "\n\n[dim]No track currently playing[/dim]\n\n"
         else:
             artist_str = ", ".join(current.artist_names)
             status = "▶️ Playing" if current.is_playing else "⏸️ Paused"
             progress = self._format_progress_bar(current.progress_ms, current.duration_ms)
+            popularity = self._format_popularity_stars(current.popularity)
+            time_info = f"{format_duration(current.progress_ms)} / {format_duration(current.duration_ms)}"
             
-            content = f"""[bold green]🎵 {current.track_name}[/bold green]
+            # Truncate long names for better display
+            track_name = current.track_name[:35] + "..." if len(current.track_name) > 35 else current.track_name
+            artist_name = artist_str[:35] + "..." if len(artist_str) > 35 else artist_str
+            album_name = current.album_name[:35] + "..." if len(current.album_name) > 35 else current.album_name
+            
+            content = f"""
+🎵 [bold green]{track_name}[/bold green]
 
-[dim]👤 {artist_str}[/dim]
+👤 [dim]{artist_name}[/dim]
 
-[dim]💿 {current.album_name}[/dim]
+💿 [dim]{album_name}[/dim]
 
 {status}
 
-⏱️ {format_duration(current.progress_ms)} / {format_duration(current.duration_ms)}
+⏱️  {time_info}
 
 {progress}
 
-⭐ {self._format_popularity_stars(current.popularity)}"""
+⭐ {popularity}
+"""
         
         return Panel(
             content,
             title="🎵 Now Playing",
             title_align="left",
             border_style="bright_blue",
-            padding=(1, 1),
+            padding=(0, 1),
+            height=12,  # Fixed height for uniformity
         )
 
     def _create_upcoming_tracks_panel(self, upcoming_tracks: List[Dict[str, Any]]) -> Panel:
         """Create panel for upcoming tracks."""
         if not upcoming_tracks:
-            content = "[dim]No upcoming tracks in queue[/dim]"
+            content = "\n[dim]No upcoming tracks in queue[/dim]\n"
         else:
-            lines = []
+            lines = [""]  # Start with empty line for consistent spacing
             for i, track in enumerate(upcoming_tracks, 1):
                 artist_str = ", ".join(track["artists"])
                 if track["name"] == "No upcoming tracks":
                     lines.append(f"[dim]{track['name']}[/dim]")
                 else:
-                    lines.append(f"{i}. [bold]{track['name']}[/bold]")
-                    lines.append(f"   [dim]{artist_str}[/dim]")
+                    # Truncate long names for better display
+                    track_name = track["name"][:28] + "..." if len(track["name"]) > 28 else track["name"]
+                    artist_name = artist_str[:28] + "..." if len(artist_str) > 28 else artist_str
+                    
+                    lines.append(f"{i}. [bold]{track_name}[/bold]")
+                    lines.append(f"   [dim]{artist_name}[/dim]")
+                    if i < len(upcoming_tracks):  # Add spacing between tracks except last
+                        lines.append("")
+            lines.append("")  # End with empty line for consistent spacing
             content = "\n".join(lines)
         
         return Panel(
@@ -542,7 +573,8 @@ class LiveStatsCollector:
             title="⏭️ Up Next",
             title_align="left",
             border_style="yellow",
-            padding=(1, 1),
+            padding=(0, 1),
+            height=12,  # Fixed height for uniformity
         )
 
     def _format_progress_bar(self, progress_ms: int, duration_ms: int) -> str:
@@ -551,8 +583,9 @@ class LiveStatsCollector:
             return "📊 ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0.0%"
         
         percentage = (progress_ms / duration_ms) * 100
-        filled_blocks = int((percentage / 100) * 40)
-        bar = "█" * filled_blocks + "░" * (40 - filled_blocks)
+        bar_width = 35  # Slightly shorter for better fit
+        filled_blocks = int((percentage / 100) * bar_width)
+        bar = "█" * filled_blocks + "░" * (bar_width - filled_blocks)
         
         return f"📊 {bar} {percentage:.1f}%"
 
