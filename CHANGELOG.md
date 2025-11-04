@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2025-11-03
 
 ### Added
+
 - Initial release of Spoticron
 - Spotify OAuth2 authentication with automatic token refresh
 - Live statistics collection:
@@ -16,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Real-time listening monitoring
 - Top tracks and artists analysis for different time periods:
   - Short term (last 4 weeks)
-  - Medium term (last 6 months)  
+  - Medium term (last 6 months)
   - Long term (all time)
 - Historical analysis features:
   - Listening evolution tracking
@@ -31,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Database backup and cleanup utilities
 
 ### Security
+
 - Local-only data storage (no external data transmission except to Spotify API)
 - Secure token management with automatic refresh
 - Environment variable configuration for sensitive credentials
@@ -38,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Planned Features
+
 - CSV export format
 - Advanced visualization capabilities
 - Playlist analysis
