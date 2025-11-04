@@ -10,10 +10,10 @@ import os
 # Add src directory to path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from auth import SpotifyAuthenticator
-from live_stats import LiveStatsCollector, CurrentTrack
-from data_storage import SpotifyDataManager
-from utils import format_duration, format_number, get_mood_from_features
+from auth import SpotifyAuthenticator  # noqa: E402
+from live_stats import LiveStatsCollector, CurrentTrack  # noqa: E402
+from data_storage import SpotifyDataManager  # noqa: E402
+from utils import format_duration, format_number, get_mood_from_features  # noqa: E402
 
 
 class TestUtils(unittest.TestCase):

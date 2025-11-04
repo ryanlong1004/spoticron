@@ -3,11 +3,10 @@ Data storage and analysis module for persistent Spotify data management.
 """
 
 import json
-import sqlite3
-from datetime import datetime, timezone
+from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass, asdict
+from typing import Dict, List, Optional, Any
+from dataclasses import dataclass
 import os
 
 from sqlalchemy import (
@@ -23,7 +22,7 @@ from sqlalchemy import (
     Index,
 )
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -601,7 +600,7 @@ class SpotifyDataManager:
                     json.dump(export_data, f, indent=2, ensure_ascii=False)
             else:
                 # For CSV, would need pandas implementation
-                print(f"CSV export not yet implemented")
+                print("CSV export not yet implemented")
                 return None
 
             session.close()

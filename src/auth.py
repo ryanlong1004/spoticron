@@ -3,7 +3,6 @@ Spotify authentication module for handling OAuth2 flow and token management.
 """
 
 import os
-import json
 import time
 from typing import Optional, Dict, Any
 from pathlib import Path

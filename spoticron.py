@@ -7,16 +7,13 @@ Command-line interface for Spotify listening statistics and analysis.
 import click
 import json
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
-from rich.text import Text
-from rich import print as rprint
 
 # Import our modules
 try:
@@ -358,7 +355,7 @@ def analyze(export):
                 discovery_rate = discovery.get("discovery_rate", 0)
                 new_discoveries = len(discovery.get("new_discoveries", []))
 
-                console.print(f"\n🔍 [bold]Discovery Patterns[/bold]")
+                console.print("\n🔍 [bold]Discovery Patterns[/bold]")
                 console.print(f"  Discovery Rate: {discovery_rate:.1f}%")
                 console.print(f"  New Tracks Found: {new_discoveries}")
 
@@ -414,7 +411,7 @@ def monitor(duration, interval):
             if track:
                 unique_tracks.add(track["track_id"])
 
-        console.print(f"📊 Summary:")
+        console.print("📊 Summary:")
         console.print(
             f"  • Active listening time: {len(playing_snapshots) * interval / 60:.1f} minutes"
         )
@@ -479,7 +476,7 @@ def auth():
 
         try:
             authenticator = SpotifyAuthenticator()
-            spotify = authenticator.authenticate()
+            authenticator.authenticate()
             user_info = authenticator.get_user_info()
 
             progress.remove_task(task)

@@ -37,16 +37,19 @@ The Spoticron branding follows Spotify's aesthetic while maintaining its own ide
 ## Usage Examples
 
 ### GitHub Repository
+
 - Repository social preview image
 - README header logo
 - Release notes and documentation
 
 ### Documentation
+
 - Header for all documentation files
 - Getting started guides
 - API reference materials
 
 ### Social Media
+
 - Twitter/X profile usage
 - LinkedIn project posts
 - Developer community shares
@@ -54,14 +57,17 @@ The Spoticron branding follows Spotify's aesthetic while maintaining its own ide
 ## Logo Specifications
 
 ### Minimum Size
+
 - **Digital**: 150px width minimum
 - **Print**: 1 inch width minimum
 
 ### Clear Space
+
 - Maintain clear space around logo equal to the height of the logo
 - Do not place text or other elements within this space
 
 ### Background Usage
+
 - Logo works on dark and light backgrounds
 - Ensure sufficient contrast
 - Test readability on various backgrounds
@@ -83,6 +89,7 @@ assets/
 ## Brand Applications
 
 ### GitHub Integration
+
 - Repository description
 - Release notes
 - Issue templates
@@ -90,6 +97,7 @@ assets/
 - GitHub Pages (if implemented)
 
 ### Documentation
+
 - README files
 - Wiki pages
 - API documentation
@@ -97,6 +105,7 @@ assets/
 - Developer documentation
 
 ### Marketing Materials
+
 - Project announcements
 - Feature highlights
 - Tutorial content
@@ -123,4 +132,4 @@ assets/
 
 ---
 
-*This branding guide ensures consistent representation of Spoticron across all platforms and materials.*
+_This branding guide ensures consistent representation of Spoticron across all platforms and materials._

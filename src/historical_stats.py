@@ -3,15 +3,13 @@ Historical stats module for analyzing Spotify listening patterns over time.
 """
 
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass, asdict
-from collections import defaultdict, Counter
-import pandas as pd
+from dataclasses import dataclass
+from collections import Counter
 
 import spotipy
 from .auth import SpotifyAuthenticator
-from .live_stats import TopItem, RecentTrack
 
 
 @dataclass
@@ -239,7 +237,6 @@ class HistoricalStatsAnalyzer:
                     continue
 
                 tracks = data["tracks"]
-                artists = data["artists"]
                 genres = data["genres"]
 
                 # Calculate diversity metrics
@@ -645,7 +642,7 @@ def format_evolution_summary(evolution_data: Dict[str, Any]) -> str:
     # Genre evolution
     genre_evo = evolution_data.get("genre_evolution", {})
     if "short_term" in genre_evo:
-        summary.append(f"\n🎵 Current Top Genres:")
+        summary.append("\n🎵 Current Top Genres:")
         for genre_data in genre_evo["short_term"][:5]:
             summary.append(
                 f"  • {genre_data['genre']} ({genre_data['percentage']:.1f}%)"
