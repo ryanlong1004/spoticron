@@ -1,9 +1,11 @@
 # Audio Features Limitation
 
 ## Issue
+
 The Spotify Web API's `audio-features` endpoint is currently returning HTTP 403 errors for this application.
 
 ## Cause
+
 This is likely due to one of the following Spotify API restrictions:
 
 1. **Development Mode Limitations**: Apps in development mode may have restricted access to certain endpoints
@@ -12,6 +14,7 @@ This is likely due to one of the following Spotify API restrictions:
 4. **API Changes**: Spotify occasionally updates their API requirements
 
 ## Impact
+
 The following features are affected when audio features are unavailable:
 
 - **Mood Analysis**: Cannot determine energy, valence, danceability levels
@@ -19,6 +22,7 @@ The following features are affected when audio features are unavailable:
 - **Detailed Track Analysis**: Missing tempo, key, acousticness data
 
 ## Workaround
+
 The application gracefully handles this limitation by:
 
 - ⚠️ Displaying clear warning messages when audio features are unavailable
@@ -27,6 +31,7 @@ The application gracefully handles this limitation by:
 - ✅ Maintaining full functionality for all other features
 
 ## What Still Works
+
 All other analytics features work perfectly:
 
 - ✅ Current track display
@@ -37,6 +42,7 @@ All other analytics features work perfectly:
 - ✅ Listening statistics and trends
 
 ## Future Resolution
+
 To resolve this issue, you would need to:
 
 1. **Submit for Extended Quota**: Apply for production-level API access through Spotify for Developers
@@ -44,4 +50,5 @@ To resolve this issue, you would need to:
 3. **Commercial License**: For commercial applications, obtain appropriate licensing
 
 ## Recommendation
+
 For personal use and development, the current functionality provides comprehensive music analytics without requiring audio features access.
