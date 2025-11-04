@@ -1,5 +1,5 @@
 """
-Spotify authentication module for handling OAuth2 flow and token management.
+Authentication module for Spotify API integration.
 """
 
 import os
@@ -10,6 +10,17 @@ from pathlib import Path
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from dotenv import load_dotenv
+
+
+class SpotifyAuthError(Exception):
+    """Custom exception for Spotify authentication errors."""
+    pass
+
+
+class SpotifyTokenError(Exception):
+    """Custom exception for Spotify token-related errors."""
+    pass
+
 
 # Load environment variables
 load_dotenv()
@@ -79,7 +90,7 @@ class SpotifyAuthenticator:
         token_info = self._get_token()
 
         if not token_info:
-            raise Exception("Failed to authenticate with Spotify")
+            raise SpotifyAuthError("Failed to authenticate with Spotify")
 
         # Create Spotify client
         self.spotify = spotipy.Spotify(auth=token_info["access_token"])
@@ -107,7 +118,7 @@ class SpotifyAuthenticator:
             try:
                 code = self.sp_oauth.parse_response_code(response)
                 token_info = self.sp_oauth.get_access_token(code)
-            except Exception as e:
+            except (ValueError, KeyError) as e:
                 print(f"Error during authentication: {e}")
                 return None
 
@@ -139,11 +150,11 @@ class SpotifyAuthenticator:
             User information dictionary or None if failed.
         """
         if not self.spotify:
-            raise Exception("Not authenticated. Call authenticate() first.")
+            raise SpotifyAuthError("Not authenticated. Call authenticate() first.")
 
         try:
             return self.spotify.current_user()
-        except Exception as e:
+        except (AttributeError, ValueError) as e:
             print(f"Error getting user info: {e}")
             return None
 

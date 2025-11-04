@@ -58,14 +58,14 @@ class TopItem:
     item_type: str  # 'track' or 'artist'
     popularity: int
     external_urls: Dict[str, str]
-    genres: List[str] = None  # For artists
-    artist_names: List[str] = None  # For tracks
-    artist_ids: List[str] = None  # For tracks
-    album_name: str = None  # For tracks
-    album_id: str = None  # For tracks
+    genres: Optional[List[str]] = None  # For artists
+    artist_names: Optional[List[str]] = None  # For tracks
+    artist_ids: Optional[List[str]] = None  # For tracks
+    album_name: Optional[str] = None  # For tracks
+    album_id: Optional[str] = None  # For tracks
     preview_url: Optional[str] = None  # For tracks
-    followers: int = None  # For artists
-    images: List[Dict[str, Any]] = None
+    followers: Optional[int] = None  # For artists
+    images: Optional[List[Dict[str, Any]]] = None
 
 
 class LiveStatsCollector:
@@ -287,7 +287,7 @@ class LiveStatsCollector:
 
             if artist_counts:
                 summary["most_recent_artist"] = max(
-                    artist_counts, key=artist_counts.get
+                    artist_counts, key=lambda x: artist_counts[x]
                 )
 
         return summary
@@ -462,7 +462,8 @@ if __name__ == "__main__":
         print("=" * 50)
         top_tracks = collector.get_top_tracks("medium_term", 5)
         for i, track in enumerate(top_tracks, 1):
-            print(f"{i}. {track.name} by {', '.join(track.artist_names)}")
+            artists = ', '.join(track.artist_names) if track.artist_names else "Unknown"
+            print(f"{i}. {track.name} by {artists}")
 
         # Test top artists
         print("\n" + "=" * 50)

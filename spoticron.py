@@ -89,7 +89,7 @@ def cli():
 def current():
     """Show currently playing track information."""
     console.print("🎵 Getting current track...", style="dim")
-    
+
     try:
         collector = LiveStatsCollector()
         current_track = collector.get_current_track()

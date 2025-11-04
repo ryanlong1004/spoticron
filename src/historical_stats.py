@@ -66,7 +66,7 @@ class HistoricalStatsAnalyzer:
         self.spotify = spotify_client
 
     def get_comprehensive_top_data(
-        self, time_ranges: List[str] = None
+        self, time_ranges: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
         Get comprehensive top tracks and artists data for multiple time ranges.
@@ -314,7 +314,7 @@ class HistoricalStatsAnalyzer:
 
                 mood_analysis["time_ranges"][time_range] = {
                     "mood_scores": mood_scores,
-                    "dominant_mood": max(mood_scores, key=mood_scores.get),
+                    "dominant_mood": max(mood_scores, key=lambda x: mood_scores[x]),
                     "energy_level": audio_features.get("avg_energy", 0),
                     "happiness_level": audio_features.get("avg_valence", 0),
                     "danceability": audio_features.get("avg_danceability", 0),
@@ -425,7 +425,7 @@ class HistoricalStatsAnalyzer:
 
     def _analyze_artist_evolution(self, all_data: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze how artist preferences have evolved."""
-        evolution = {
+        artist_evolution = {
             "stable_favorites": [],
             "rising_artists": [],
             "declining_artists": [],
@@ -483,7 +483,7 @@ class HistoricalStatsAnalyzer:
                     }
                 )
 
-        return evolution
+        return artist_evolution
 
     def _analyze_genre_evolution(self, all_data: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze how genre preferences have evolved."""
