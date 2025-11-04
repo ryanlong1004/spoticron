@@ -265,9 +265,12 @@ class HistoricalStatsAnalyzer:
 
                 # Audio features diversity
                 audio_features = data.get("audio_features", {})
-                feature_diversity = self._calculate_audio_feature_diversity(
-                    audio_features
-                )
+                if audio_features:
+                    feature_diversity = self._calculate_audio_feature_diversity(
+                        audio_features
+                    )
+                else:
+                    feature_diversity = 0.0
 
                 diversity_metrics["time_ranges"][time_range] = {
                     "unique_artists": unique_artists,
@@ -301,19 +304,43 @@ class HistoricalStatsAnalyzer:
             mood_analysis = {
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "time_ranges": {},
+                "audio_features_available": False,
             }
 
             for time_range, data in comprehensive_data["time_ranges"].items():
-                if not data or not data.get("audio_features"):
+                if not data:
                     continue
 
-                audio_features = data["audio_features"]
+                audio_features = data.get("audio_features", {})
+                
+                if not audio_features:
+                    # No audio features available, provide basic analysis
+                    mood_analysis["time_ranges"][time_range] = {
+                        "mood_scores": {
+                            "energetic": 0.0,
+                            "happy": 0.0,
+                            "chill": 0.0,
+                            "melancholic": 0.0,
+                            "danceable": 0.0,
+                        },
+                        "dominant_mood": "unknown",
+                        "energy_level": 0.0,
+                        "happiness_level": 0.0,
+                        "danceability": 0.0,
+                        "note": "Audio features unavailable for mood analysis",
+                    }
+                    continue
+
+                mood_analysis["audio_features_available"] = True
 
                 # Define mood categories based on audio features
                 mood_scores = self._calculate_mood_scores(audio_features)
 
                 # Get dominant mood safely
-                dominant_mood = max(mood_scores.keys(), key=lambda mood: mood_scores[mood])
+                if mood_scores and any(score > 0 for score in mood_scores.values()):
+                    dominant_mood = max(mood_scores.keys(), key=lambda mood: mood_scores[mood])
+                else:
+                    dominant_mood = "unknown"
 
                 mood_analysis["time_ranges"][time_range] = {
                     "mood_scores": mood_scores,
@@ -327,7 +354,7 @@ class HistoricalStatsAnalyzer:
 
         except Exception as e:
             print(f"Error analyzing mood patterns: {e}")
-            return {}
+            return {"error": str(e), "audio_features_available": False}
 
     def _process_top_tracks(self, tracks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Process and enrich top tracks data."""
@@ -390,10 +417,21 @@ class HistoricalStatsAnalyzer:
     def _get_audio_features_summary(self, track_ids: List[str]) -> Dict[str, float]:
         """Get summarized audio features for a list of tracks."""
         try:
-            if not track_ids:
+            if not track_ids or not self.spotify:
                 return {}
 
-            audio_features = self.spotify.audio_features(track_ids)
+            # Try to get audio features, but handle 403 errors gracefully
+            try:
+                audio_features = self.spotify.audio_features(track_ids)
+            except Exception as api_error:
+                # Check if it's a 403 error (likely due to app restrictions)
+                if "403" in str(api_error):
+                    print("⚠️  Audio features unavailable (likely due to Spotify app restrictions)")
+                    print("   Your analysis will continue without audio feature data.")
+                    return {}
+                else:
+                    # Re-raise other errors
+                    raise api_error
 
             # Filter out None values
             valid_features = [f for f in audio_features if f is not None]
