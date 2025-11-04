@@ -79,10 +79,7 @@ def cli():
 
 
 @cli.command()
-@click.option(
-    "--show-details", "-d", is_flag=True, help="Show detailed track information"
-)
-def current(show_details):
+def current():
     """Show currently playing track information."""
     with Progress(
         SpinnerColumn(),
@@ -98,19 +95,7 @@ def current(show_details):
             progress.remove_task(task)
 
             if current_track:
-                if show_details:
-                    print_current_track(current_track)
-                else:
-                    console.print(
-                        Panel(
-                            f"🎵 [bold]{current_track.track_name}[/bold]\n"
-                            f"👨‍🎤 {', '.join(current_track.artist_names)}\n"
-                            f"💿 {current_track.album_name}\n"
-                            f"▶️ {'Playing' if current_track.is_playing else 'Paused'}",
-                            title="Now Playing",
-                            border_style="green",
-                        )
-                    )
+                print_current_track(current_track)
             else:
                 console.print("🔇 No track currently playing", style="yellow")
 

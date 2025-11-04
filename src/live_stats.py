@@ -352,27 +352,79 @@ def format_duration(duration_ms: int) -> str:
 
 def print_current_track(track: CurrentTrack):
     """
-    Print formatted current track information.
+    Print beautifully formatted current track information with Rich styling.
 
     Args:
         track: CurrentTrack object to display.
     """
+    from rich.console import Console
+    from rich.panel import Panel
+    from rich.table import Table
+
+    console = Console()
+
+    # Calculate progress
     progress_pct = (
         (track.progress_ms / track.duration_ms) * 100 if track.duration_ms > 0 else 0
     )
 
-    print("\n" + "=" * 50)
-    print("🎵 CURRENTLY PLAYING")
-    print("=" * 50)
-    print(f"Track: {track.track_name}")
-    print(f"Artist(s): {', '.join(track.artist_names)}")
-    print(f"Album: {track.album_name}")
-    print(f"Duration: {format_duration(track.duration_ms)}")
-    print(f"Progress: {format_duration(track.progress_ms)} ({progress_pct:.1f}%)")
-    print(f"Status: {'▶️ Playing' if track.is_playing else '⏸️ Paused'}")
-    print(f"Popularity: {track.popularity}/100")
+    # Create a beautiful track info display
+    track_info = Table.grid(padding=1)
+    track_info.add_column(style="cyan", justify="right")
+    track_info.add_column(style="white")
+
+    # Add track details with icons
+    track_info.add_row("🎵", f"[bold green]{track.track_name}[/bold green]")
+    track_info.add_row(
+        "👨‍🎤", f"[bold yellow]{', '.join(track.artist_names)}[/bold yellow]"
+    )
+    track_info.add_row("💿", f"[dim]{track.album_name}[/dim]")
+
+    # Status with animated indicator
+    status_icon = "▶️" if track.is_playing else "⏸️"
+    status_text = (
+        "[green]Playing[/green]" if track.is_playing else "[yellow]Paused[/yellow]"
+    )
+    track_info.add_row(status_icon, status_text)
+
+    # Progress bar
+    progress_bar = (
+        f"[blue]{'█' * int(progress_pct // 2)}[/blue]"
+        + f"[dim]{'░' * (50 - int(progress_pct // 2))}[/dim]"
+    )
+
+    track_info.add_row(
+        "⏱️",
+        f"{format_duration(track.progress_ms)} / {format_duration(track.duration_ms)}",
+    )
+    track_info.add_row("", f"{progress_bar} [dim]{progress_pct:.1f}%[/dim]")
+
+    # Popularity with stars
+    stars = "⭐" * (track.popularity // 20) + "☆" * (5 - (track.popularity // 20))
+    track_info.add_row("📊", f"{stars} [dim]({track.popularity}/100)[/dim]")
+
+    # Create main panel
+    panel = Panel(
+        track_info,
+        title="[bold cyan]♪ Now Playing ♪[/bold cyan]",
+        border_style="green",
+        padding=(1, 2),
+        expand=False,
+    )
+
+    console.print(panel)
+
+    # Add extra info if available
+    extras = []
     if track.preview_url:
-        print(f"Preview: {track.preview_url}")
+        extras.append(f"🔗 [link={track.preview_url}]Preview Available[/link]")
+    if hasattr(track, "explicit") and track.explicit:
+        extras.append("🚫 [red]Explicit[/red]")
+
+    if extras:
+        console.print(" ".join(extras), style="dim", justify="center")
+
+    console.print()
 
 
 if __name__ == "__main__":
