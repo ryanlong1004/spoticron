@@ -375,8 +375,8 @@ def analyze(export):
 @click.option(
     "--duration",
     "-d",
-    default=10,
-    help="Duration to monitor in minutes (default: 10)",
+    default=0,
+    help="Duration to monitor in minutes (default: 0 = indefinite)",
 )
 @click.option(
     "--interval",
@@ -397,14 +397,17 @@ def analyze(export):
     help="Number of upcoming tracks to show (default: 3)",
 )
 def monitor(duration, interval, previous_tracks, next_tracks):
-    """Enhanced monitoring mode with smart updates and queue display."""
+    """Enhanced monitoring mode with smart updates and queue display. Default: indefinite monitoring."""
     show_banner()
     
     try:
         live_stats = LiveStatsCollector()
         
         console.print("🎵 Starting enhanced monitoring mode...", style="bold green")
-        console.print(f"⏱️  Duration: {duration} minutes")
+        if duration == 0:
+            console.print("⏱️  Duration: Indefinite (Ctrl+C to stop)")
+        else:
+            console.print(f"⏱️  Duration: {duration} minutes")
         console.print(f"🔄 Update interval: {interval} seconds")
         console.print(f"📜 Previous tracks: {previous_tracks}")
         console.print(f"⏭️  Next tracks: {next_tracks}")
@@ -499,58 +502,6 @@ def auth():
         except Exception as e:
             progress.remove_task(task)
             console.print(f"❌ Authentication error: {e}", style="red")
-
-
-@cli.command()
-@click.option(
-    "--duration",
-    "-d",
-    default=10,
-    help="Duration to monitor in minutes (default: 10)",
-)
-@click.option(
-    "--interval",
-    "-i",
-    default=5,
-    help="Update interval in seconds (default: 5)",
-)
-@click.option(
-    "--previous-tracks",
-    "-p",
-    default=3,
-    help="Number of previous tracks to show (default: 3)",
-)
-@click.option(
-    "--next-tracks",
-    "-n",
-    default=3,
-    help="Number of upcoming tracks to show (default: 3)",
-)
-def monitor(duration, interval, previous_tracks, next_tracks):
-    """Enhanced monitoring mode with smart updates and queue display."""
-    show_banner()
-    
-    try:
-        live_stats = LiveStatsCollector()
-        
-        console.print("🎵 Starting enhanced monitoring mode...", style="bold green")
-        console.print(f"⏱️  Duration: {duration} minutes")
-        console.print(f"🔄 Update interval: {interval} seconds")
-        console.print(f"📜 Previous tracks: {previous_tracks}")
-        console.print(f"⏭️  Next tracks: {next_tracks}")
-        console.print("")
-        
-        live_stats.monitor_enhanced(
-            duration_minutes=duration,
-            interval_seconds=interval,
-            previous_tracks=previous_tracks,
-            next_tracks=next_tracks,
-        )
-        
-    except KeyboardInterrupt:
-        console.print("\n🛑 Monitoring stopped by user", style="bold red")
-    except Exception as e:
-        console.print(f"❌ Monitoring error: {e}", style="red")
 
 
 @cli.command()

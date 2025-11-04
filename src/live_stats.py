@@ -339,7 +339,7 @@ class LiveStatsCollector:
 
     def monitor_enhanced(
         self,
-        duration_minutes: int = 10,
+        duration_minutes: int = 0,  # 0 = indefinite
         interval_seconds: int = 5,
         previous_tracks: int = 3,
         next_tracks: int = 3,
@@ -348,21 +348,25 @@ class LiveStatsCollector:
         Enhanced monitoring with smart updates and queue display.
 
         Args:
-            duration_minutes: How long to monitor (in minutes).
+            duration_minutes: How long to monitor (in minutes). 0 = indefinite.
             interval_seconds: How often to check (in seconds).
             previous_tracks: Number of previous tracks to show.
             next_tracks: Number of upcoming tracks to show.
         """
         console = Console()
         start_time = time.time()
-        end_time = start_time + (duration_minutes * 60)
+        indefinite = duration_minutes == 0
+        end_time = start_time + (duration_minutes * 60) if not indefinite else float('inf')
         
         # Track previous state to avoid unnecessary updates
         last_track_id = None
         last_progress = 0
         
         console.print("🎵 Enhanced Monitoring Mode Started", style="bold green")
-        console.print(f"⏱️  Duration: {duration_minutes} minutes | Update interval: {interval_seconds}s")
+        if indefinite:
+            console.print(f"⏱️  Duration: Indefinite (Ctrl+C to stop) | Update interval: {interval_seconds}s")
+        else:
+            console.print(f"⏱️  Duration: {duration_minutes} minutes | Update interval: {interval_seconds}s")
         console.print("")
 
         try:
@@ -380,7 +384,7 @@ class LiveStatsCollector:
                 if track_changed or progress_change or last_track_id is None:
                     # Clear screen and update display
                     console.clear()
-                    self._display_enhanced_monitoring(
+                    self._display_enhanced_monitoring_vertical(
                         console, current, previous_tracks, next_tracks
                     )
                     
@@ -392,7 +396,46 @@ class LiveStatsCollector:
         except KeyboardInterrupt:
             console.print("\n🛑 Monitoring stopped by user", style="bold red")
         
-        console.print(f"\n✅ Monitoring completed after {duration_minutes} minutes", style="bold green")
+        if not indefinite:
+            console.print(f"\n✅ Monitoring completed after {duration_minutes} minutes", style="bold green")
+        else:
+            console.print("\n✅ Monitoring session ended", style="bold green")
+
+    def _display_enhanced_monitoring_vertical(
+        self,
+        console: Console,
+        current: Optional[CurrentTrack],
+        previous_tracks: int,
+        next_tracks: int,
+    ) -> None:
+        """Display the enhanced monitoring layout in vertical single column format."""
+        # Header with better spacing
+        console.print("")
+        header_line = "─" * 70
+        console.print(f"╭{header_line}╮", style="bold blue")
+        console.print("│" + " " * 22 + "Enhanced Monitoring Mode" + " " * 22 + "│", style="bold blue")
+        console.print(f"╰{header_line}╯", style="bold blue")
+        console.print("")
+        
+        # Get data for all sections
+        recent_tracks = self._get_recent_tracks_for_monitoring(previous_tracks)
+        upcoming_tracks = self._get_upcoming_tracks_for_monitoring(next_tracks)
+        
+        # Create and display panels vertically
+        current_panel = self._create_current_track_panel_vertical(current)
+        console.print(current_panel)
+        console.print("")
+        
+        recent_panel = self._create_recent_tracks_panel_vertical(recent_tracks)
+        console.print(recent_panel)
+        console.print("")
+        
+        upcoming_panel = self._create_upcoming_tracks_panel_vertical(upcoming_tracks)
+        console.print(upcoming_panel)
+        
+        # Footer with controls
+        console.print("")
+        console.print("💡 Press Ctrl+C to stop monitoring", style="dim italic")
 
     def _display_enhanced_monitoring(
         self,
@@ -595,6 +638,95 @@ class LiveStatsCollector:
         full_stars = "⭐" * stars
         empty_stars = "☆" * (5 - stars)
         return f"{full_stars}{empty_stars} ({popularity}/100)"
+
+    def _create_current_track_panel_vertical(self, current: Optional[CurrentTrack]) -> Panel:
+        """Create vertical panel for current track with more space."""
+        if not current:
+            content = "\n[dim]No track currently playing[/dim]\n"
+        else:
+            artist_str = ", ".join(current.artist_names)
+            status = "▶️ Playing" if current.is_playing else "⏸️ Paused"
+            progress = self._format_progress_bar_wide(current.progress_ms, current.duration_ms)
+            popularity = self._format_popularity_stars(current.popularity)
+            time_info = f"{format_duration(current.progress_ms)} / {format_duration(current.duration_ms)}"
+            
+            # No truncation needed in vertical layout - more space
+            content = f"""
+🎵 [bold green]{current.track_name}[/bold green]
+
+👤 [dim]{artist_str}[/dim]
+
+💿 [dim]{current.album_name}[/dim]
+
+{status}     ⏱️  {time_info}
+
+{progress}
+
+⭐ {popularity}
+"""
+        
+        return Panel(
+            content,
+            title="🎵 Now Playing",
+            title_align="left",
+            border_style="bright_blue",
+            padding=(1, 2),
+        )
+
+    def _create_recent_tracks_panel_vertical(self, recent_tracks: List[Dict[str, Any]]) -> Panel:
+        """Create vertical panel for recent tracks with more space."""
+        if not recent_tracks:
+            content = "\n[dim]No recent tracks available[/dim]\n"
+        else:
+            lines = [""]
+            for i, track in enumerate(recent_tracks, 1):
+                artist_str = ", ".join(track["artists"])
+                lines.append(f"{i}. [bold]{track['name']}[/bold] - [dim]{artist_str}[/dim]")
+            lines.append("")
+            content = "\n".join(lines)
+        
+        return Panel(
+            content,
+            title="🕐 Recent Tracks",
+            title_align="left",
+            border_style="green",
+            padding=(1, 2),
+        )
+
+    def _create_upcoming_tracks_panel_vertical(self, upcoming_tracks: List[Dict[str, Any]]) -> Panel:
+        """Create vertical panel for upcoming tracks with more space."""
+        if not upcoming_tracks:
+            content = "\n[dim]No upcoming tracks in queue[/dim]\n"
+        else:
+            lines = [""]
+            for i, track in enumerate(upcoming_tracks, 1):
+                artist_str = ", ".join(track["artists"])
+                if track["name"] == "No upcoming tracks":
+                    lines.append(f"[dim]{track['name']}[/dim]")
+                else:
+                    lines.append(f"{i}. [bold]{track['name']}[/bold] - [dim]{artist_str}[/dim]")
+            lines.append("")
+            content = "\n".join(lines)
+        
+        return Panel(
+            content,
+            title="⏭️ Up Next",
+            title_align="left",
+            border_style="yellow",
+            padding=(1, 2),
+        )
+
+    def _format_progress_bar_wide(self, progress_ms: int, duration_ms: int) -> str:
+        """Create a wider progress bar for vertical layout."""
+        if duration_ms == 0:
+            return "📊 " + "░" * 60 + " 0.0%"
+        
+        percentage = (progress_ms / duration_ms) * 100
+        bar_width = 60  # Wider bar for single column layout
+        filled_blocks = int((percentage / 100) * bar_width)
+        bar = "█" * filled_blocks + "░" * (bar_width - filled_blocks)
+        
+        return f"📊 {bar} {percentage:.1f}%"
 
 
 def format_duration(duration_ms: int) -> str:
