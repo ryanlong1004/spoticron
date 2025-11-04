@@ -8,6 +8,10 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, asdict
 
 import spotipy
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+
 from .auth import SpotifyAuthenticator
 
 
@@ -92,31 +96,31 @@ class LiveStatsCollector:
             CurrentTrack object or None if nothing is playing.
         """
         try:
-            current = self.spotify.current_playback()
+            current_playback = self.spotify.current_playback()
 
-            if not current or not current.get("item"):
+            if not current_playback or not current_playback.get("item"):
                 return None
 
-            track = current["item"]
+            track_data = current_playback["item"]
 
             return CurrentTrack(
-                track_name=track["name"],
-                artist_names=[artist["name"] for artist in track["artists"]],
-                album_name=track["album"]["name"],
-                duration_ms=track["duration_ms"],
-                progress_ms=current.get("progress_ms", 0),
-                is_playing=current.get("is_playing", False),
-                track_id=track["id"],
-                artist_ids=[artist["id"] for artist in track["artists"]],
-                album_id=track["album"]["id"],
-                popularity=track.get("popularity", 0),
-                explicit=track.get("explicit", False),
-                external_urls=track.get("external_urls", {}),
-                preview_url=track.get("preview_url"),
+                track_name=track_data["name"],
+                artist_names=[artist["name"] for artist in track_data["artists"]],
+                album_name=track_data["album"]["name"],
+                duration_ms=track_data["duration_ms"],
+                progress_ms=current_playback.get("progress_ms", 0),
+                is_playing=current_playback.get("is_playing", False),
+                track_id=track_data["id"],
+                artist_ids=[artist["id"] for artist in track_data["artists"]],
+                album_id=track_data["album"]["id"],
+                popularity=track_data.get("popularity", 0),
+                explicit=track_data.get("explicit", False),
+                external_urls=track_data.get("external_urls", {}),
+                preview_url=track_data.get("preview_url"),
                 timestamp=datetime.now(timezone.utc).isoformat(),
             )
 
-        except Exception as e:
+        except (KeyError, ValueError, AttributeError) as e:
             print(f"Error getting current track: {e}")
             return None
 
@@ -155,7 +159,7 @@ class LiveStatsCollector:
 
             return recent_tracks
 
-        except Exception as e:
+        except (KeyError, ValueError, AttributeError) as e:
             print(f"Error getting recently played tracks: {e}")
             return []
 
@@ -357,10 +361,6 @@ def print_current_track(track: CurrentTrack):
     Args:
         track: CurrentTrack object to display.
     """
-    from rich.console import Console
-    from rich.panel import Panel
-    from rich.table import Table
-
     console = Console()
 
     # Calculate progress
@@ -386,7 +386,9 @@ def print_current_track(track: CurrentTrack):
     # Status with consistent styling
     status_icon = "▶️" if track.is_playing else "⏸️"
     status_text = (
-        "[bright_green]Playing[/bright_green]" if track.is_playing else "[bright_yellow]Paused[/bright_yellow]"
+        "[bright_green]Playing[/bright_green]"
+        if track.is_playing
+        else "[bright_yellow]Paused[/bright_yellow]"
     )
     track_info.add_row(status_icon, status_text)
     track_info.add_row("", "")  # Spacing
@@ -471,9 +473,8 @@ if __name__ == "__main__":
         print("=" * 50)
         top_artists = collector.get_top_artists("medium_term", 5)
         for i, artist in enumerate(top_artists, 1):
-            print(
-                f"{i}. {artist.name} (Genres: {', '.join(artist.genres[:3]) if artist.genres else 'N/A'})"
-            )
+            genres_str = ', '.join(artist.genres[:3]) if artist.genres else 'N/A'
+            print(f"{i}. {artist.name} (Genres: {genres_str})")
 
     except Exception as e:
         print(f"Error: {e}")
