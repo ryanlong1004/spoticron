@@ -15,37 +15,37 @@ disable=
     # Import issues (expected in development environment)
     import-error,
     no-member,
-    
+
     # Dataclass complexity (acceptable for data models)
     too-many-instance-attributes,
     too-many-locals,
-    
+
     # Variable naming conflicts (some acceptable in limited scope)
     redefined-outer-name,
-    
+
     # Exception handling (some generic exceptions are acceptable)
     broad-exception-caught,
-    
+
     # Import organization (some dynamic imports are necessary)
     import-outside-toplevel,
-    
+
     # Code style preferences
     missing-module-docstring,
     missing-class-docstring,
     missing-function-docstring,
     line-too-long,
-    
+
     # Type checking issues (expected with third-party libraries)
     no-value-for-parameter,
     unexpected-keyword-arg,
-    
+
     # Design patterns
     too-few-public-methods,
     too-many-arguments,
     too-many-branches,
     too-many-statements,
     too-many-return-statements,
-    
+
     # Code style (acceptable patterns)
     no-else-return,
     invalid-name,

@@ -12,7 +12,9 @@ from pathlib import Path
 def run_command(cmd):
     """Run a command and return its output."""
     try:
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=30, check=False)
+        result = subprocess.run(
+            cmd, shell=True, capture_output=True, text=True, timeout=30, check=False
+        )
         return result.returncode, result.stdout, result.stderr
     except subprocess.TimeoutExpired:
         return -1, "", "Command timeout"
@@ -22,7 +24,9 @@ def test_export_help():
     """Test that export help shows the new options."""
     print("Testing export help...")
 
-    _, stdout, _ = run_command("python spoticron.py export --help")  # Check that help includes new options
+    _, stdout, _ = run_command(
+        "python spoticron.py export --help"
+    )  # Check that help includes new options
     required_options = [
         "--format [json|csv]",
         "--output TEXT",
@@ -48,7 +52,9 @@ def test_export_with_no_args():
     code, stdout, stderr = run_command("python spoticron.py export")
 
     # Should either succeed with live data or fail with helpful message
-    success = "Live data exported successfully!" in stdout or "No stored data found" in stdout
+    success = (
+        "Live data exported successfully!" in stdout or "No stored data found" in stdout
+    )
 
     if success:
         print("✅ Export with no args provides useful feedback")
@@ -72,13 +78,17 @@ def test_export_with_custom_output():
 
         # Check if file was created or helpful error given
         success = (
-            output_file.exists() or "Failed to collect fresh data" in stdout or "No active Spotify session" in stdout
+            output_file.exists()
+            or "Failed to collect fresh data" in stdout
+            or "No active Spotify session" in stdout
         )
 
         if success:
             print("✅ Export with custom output works")
             if output_file.exists():
-                print(f"   Created file: {output_file} ({output_file.stat().st_size} bytes)")
+                print(
+                    f"   Created file: {output_file} ({output_file.stat().st_size} bytes)"
+                )
         else:
             print("❌ Export with custom output failed")
             print(f"Output: {stdout}")

@@ -164,7 +164,9 @@ class LiveStatsCollector:
             print(f"Error getting recently played tracks: {e}")
             return []
 
-    def get_top_tracks(self, time_range: str = "medium_term", limit: int = 20) -> List[TopItem]:
+    def get_top_tracks(
+        self, time_range: str = "medium_term", limit: int = 20
+    ) -> List[TopItem]:
         """
         Get user's top tracks.
 
@@ -176,7 +178,9 @@ class LiveStatsCollector:
             List of TopItem objects for tracks.
         """
         try:
-            results = self.spotify.current_user_top_tracks(time_range=time_range, limit=min(limit, 50))
+            results = self.spotify.current_user_top_tracks(
+                time_range=time_range, limit=min(limit, 50)
+            )
 
             top_tracks = []
 
@@ -203,7 +207,9 @@ class LiveStatsCollector:
             print(f"Error getting top tracks: {e}")
             return []
 
-    def get_top_artists(self, time_range: str = "medium_term", limit: int = 20) -> List[TopItem]:
+    def get_top_artists(
+        self, time_range: str = "medium_term", limit: int = 20
+    ) -> List[TopItem]:
         """
         Get user's top artists.
 
@@ -215,7 +221,9 @@ class LiveStatsCollector:
             List of TopItem objects for artists.
         """
         try:
-            results = self.spotify.current_user_top_artists(time_range=time_range, limit=min(limit, 50))
+            results = self.spotify.current_user_top_artists(
+                time_range=time_range, limit=min(limit, 50)
+            )
 
             top_artists = []
 
@@ -267,7 +275,9 @@ class LiveStatsCollector:
             "current_track": asdict(current) if current else None,
             "is_active": current is not None and current.is_playing,
             "recent_tracks_count": len(recent),
-            "recent_artists": list(set(artist for track in recent for artist in track.artist_names)),
+            "recent_artists": list(
+                set(artist for track in recent for artist in track.artist_names)
+            ),
             "recent_unique_tracks": len(set(track.track_id for track in recent)),
         }
 
@@ -283,11 +293,15 @@ class LiveStatsCollector:
                     artist_counts[artist] = artist_counts.get(artist, 0) + 1
 
             if artist_counts:
-                summary["most_recent_artist"] = max(artist_counts, key=lambda x: artist_counts[x])
+                summary["most_recent_artist"] = max(
+                    artist_counts, key=lambda x: artist_counts[x]
+                )
 
         return summary
 
-    def monitor_listening(self, duration_minutes: int = 10, interval_seconds: int = 30) -> List[Dict[str, Any]]:
+    def monitor_listening(
+        self, duration_minutes: int = 10, interval_seconds: int = 30
+    ) -> List[Dict[str, Any]]:
         """
         Monitor listening activity for a specified duration.
 
@@ -316,7 +330,9 @@ class LiveStatsCollector:
             snapshots.append(snapshot)
 
             if current:
-                print(f"Playing: {current.track_name} by {', '.join(current.artist_names)}")
+                print(
+                    f"Playing: {current.track_name} by {', '.join(current.artist_names)}"
+                )
             else:
                 print("No track currently playing")
 
@@ -343,7 +359,9 @@ class LiveStatsCollector:
         console = Console()
         start_time = time.time()
         indefinite = duration_minutes == 0
-        end_time = start_time + (duration_minutes * 60) if not indefinite else float("inf")
+        end_time = (
+            start_time + (duration_minutes * 60) if not indefinite else float("inf")
+        )
 
         # Track previous state to avoid unnecessary updates
         last_track_id = None
@@ -351,9 +369,13 @@ class LiveStatsCollector:
 
         console.print("🎵 Enhanced Monitoring Mode Started", style="bold green")
         if indefinite:
-            console.print(f"⏱️  Duration: Indefinite (Ctrl+C to stop) | Update interval: {interval_seconds}s")
+            console.print(
+                f"⏱️  Duration: Indefinite (Ctrl+C to stop) | Update interval: {interval_seconds}s"
+            )
         else:
-            console.print(f"⏱️  Duration: {duration_minutes} minutes | Update interval: {interval_seconds}s")
+            console.print(
+                f"⏱️  Duration: {duration_minutes} minutes | Update interval: {interval_seconds}s"
+            )
         console.print("")
 
         try:
@@ -365,13 +387,17 @@ class LiveStatsCollector:
                 current_progress = current.progress_ms if current else 0
 
                 # Only update display if track changed or significant progress change
-                progress_change = abs(current_progress - last_progress) > 10000  # 10 seconds
+                progress_change = (
+                    abs(current_progress - last_progress) > 10000
+                )  # 10 seconds
                 track_changed = current_track_id != last_track_id
 
                 if track_changed or progress_change or last_track_id is None:
                     # Clear screen and update display
                     console.clear()
-                    self._display_enhanced_monitoring_vertical(console, current, previous_tracks, next_tracks)
+                    self._display_enhanced_monitoring_vertical(
+                        console, current, previous_tracks, next_tracks
+                    )
 
                     last_track_id = current_track_id
                     last_progress = current_progress
@@ -460,7 +486,9 @@ class LiveStatsCollector:
         upcoming_panel = self._create_upcoming_tracks_panel(upcoming_tracks)
 
         # Display in columns with consistent spacing
-        columns = Columns([recent_panel, current_panel, upcoming_panel], equal=True, expand=True)
+        columns = Columns(
+            [recent_panel, current_panel, upcoming_panel], equal=True, expand=True
+        )
         console.print(columns)
 
         # Footer with controls
@@ -491,7 +519,10 @@ class LiveStatsCollector:
         """Get upcoming tracks in queue for monitoring display."""
         try:
             if not self.spotify:
-                return [{"name": "Queue unavailable", "artists": ["Not authenticated"]} for _ in range(limit)]
+                return [
+                    {"name": "Queue unavailable", "artists": ["Not authenticated"]}
+                    for _ in range(limit)
+                ]
 
             queue = self.spotify.queue()
             upcoming = []
@@ -503,7 +534,9 @@ class LiveStatsCollector:
                         upcoming.append(
                             {
                                 "name": item["name"],
-                                "artists": [artist["name"] for artist in item.get("artists", [])],
+                                "artists": [
+                                    artist["name"] for artist in item.get("artists", [])
+                                ],
                             }
                         )
 
@@ -519,7 +552,10 @@ class LiveStatsCollector:
             return upcoming
         except Exception as e:
             print(f"Error getting queue: {e}")
-            return [{"name": "Queue unavailable", "artists": ["Error fetching queue"]} for _ in range(limit)]
+            return [
+                {"name": "Queue unavailable", "artists": ["Error fetching queue"]}
+                for _ in range(limit)
+            ]
 
     def _create_recent_tracks_panel(self, recent_tracks: List[Dict[str, Any]]) -> Panel:
         """Create panel for recent tracks."""
@@ -530,8 +566,14 @@ class LiveStatsCollector:
             for i, track in enumerate(recent_tracks, 1):
                 artist_str = ", ".join(track["artists"])
                 # Truncate long names for better display
-                track_name = track["name"][:28] + "..." if len(track["name"]) > 28 else track["name"]
-                artist_name = artist_str[:28] + "..." if len(artist_str) > 28 else artist_str
+                track_name = (
+                    track["name"][:28] + "..."
+                    if len(track["name"]) > 28
+                    else track["name"]
+                )
+                artist_name = (
+                    artist_str[:28] + "..." if len(artist_str) > 28 else artist_str
+                )
 
                 lines.append(f"{i}. [bold]{track_name}[/bold]")
                 lines.append(f"   [dim]{artist_name}[/dim]")
@@ -556,14 +598,26 @@ class LiveStatsCollector:
         else:
             artist_str = ", ".join(current.artist_names)
             status = "▶️ Playing" if current.is_playing else "⏸️ Paused"
-            progress = self._format_progress_bar(current.progress_ms, current.duration_ms)
+            progress = self._format_progress_bar(
+                current.progress_ms, current.duration_ms
+            )
             popularity = self._format_popularity_stars(current.popularity)
             time_info = f"{format_duration(current.progress_ms)} / {format_duration(current.duration_ms)}"
 
             # Truncate long names for better display
-            track_name = current.track_name[:35] + "..." if len(current.track_name) > 35 else current.track_name
-            artist_name = artist_str[:35] + "..." if len(artist_str) > 35 else artist_str
-            album_name = current.album_name[:35] + "..." if len(current.album_name) > 35 else current.album_name
+            track_name = (
+                current.track_name[:35] + "..."
+                if len(current.track_name) > 35
+                else current.track_name
+            )
+            artist_name = (
+                artist_str[:35] + "..." if len(artist_str) > 35 else artist_str
+            )
+            album_name = (
+                current.album_name[:35] + "..."
+                if len(current.album_name) > 35
+                else current.album_name
+            )
 
             content = f"""
 🎵 [bold green]{track_name}[/bold green]
@@ -590,7 +644,9 @@ class LiveStatsCollector:
             height=12,  # Fixed height for uniformity
         )
 
-    def _create_upcoming_tracks_panel(self, upcoming_tracks: List[Dict[str, Any]]) -> Panel:
+    def _create_upcoming_tracks_panel(
+        self, upcoming_tracks: List[Dict[str, Any]]
+    ) -> Panel:
         """Create panel for upcoming tracks."""
         if not upcoming_tracks:
             content = "\n[dim]No upcoming tracks in queue[/dim]\n"
@@ -602,12 +658,20 @@ class LiveStatsCollector:
                     lines.append(f"[dim]{track['name']}[/dim]")
                 else:
                     # Truncate long names for better display
-                    track_name = track["name"][:28] + "..." if len(track["name"]) > 28 else track["name"]
-                    artist_name = artist_str[:28] + "..." if len(artist_str) > 28 else artist_str
+                    track_name = (
+                        track["name"][:28] + "..."
+                        if len(track["name"]) > 28
+                        else track["name"]
+                    )
+                    artist_name = (
+                        artist_str[:28] + "..." if len(artist_str) > 28 else artist_str
+                    )
 
                     lines.append(f"{i}. [bold]{track_name}[/bold]")
                     lines.append(f"   [dim]{artist_name}[/dim]")
-                    if i < len(upcoming_tracks):  # Add spacing between tracks except last
+                    if i < len(
+                        upcoming_tracks
+                    ):  # Add spacing between tracks except last
                         lines.append("")
             lines.append("")  # End with empty line for consistent spacing
             content = "\n".join(lines)
@@ -640,14 +704,18 @@ class LiveStatsCollector:
         empty_stars = "☆" * (5 - stars)
         return f"{full_stars}{empty_stars} ({popularity}/100)"
 
-    def _create_current_track_panel_vertical(self, current: Optional[CurrentTrack]) -> Panel:
+    def _create_current_track_panel_vertical(
+        self, current: Optional[CurrentTrack]
+    ) -> Panel:
         """Create vertical panel for current track with more space."""
         if not current:
             content = "\n[dim]No track currently playing[/dim]\n"
         else:
             artist_str = ", ".join(current.artist_names)
             status = "▶️ Playing" if current.is_playing else "⏸️ Paused"
-            progress = self._format_progress_bar_wide(current.progress_ms, current.duration_ms)
+            progress = self._format_progress_bar_wide(
+                current.progress_ms, current.duration_ms
+            )
             popularity = self._format_popularity_stars(current.popularity)
             time_info = f"{format_duration(current.progress_ms)} / {format_duration(current.duration_ms)}"
 
@@ -674,7 +742,9 @@ class LiveStatsCollector:
             padding=(1, 2),
         )
 
-    def _create_recent_tracks_panel_vertical(self, recent_tracks: List[Dict[str, Any]]) -> Panel:
+    def _create_recent_tracks_panel_vertical(
+        self, recent_tracks: List[Dict[str, Any]]
+    ) -> Panel:
         """Create vertical panel for recent tracks with more space."""
         if not recent_tracks:
             content = "\n[dim]No recent tracks available[/dim]\n"
@@ -682,7 +752,9 @@ class LiveStatsCollector:
             lines = [""]
             for i, track in enumerate(recent_tracks, 1):
                 artist_str = ", ".join(track["artists"])
-                lines.append(f"{i}. [bold]{track['name']}[/bold] - [dim]{artist_str}[/dim]")
+                lines.append(
+                    f"{i}. [bold]{track['name']}[/bold] - [dim]{artist_str}[/dim]"
+                )
             lines.append("")
             content = "\n".join(lines)
 
@@ -694,7 +766,9 @@ class LiveStatsCollector:
             padding=(1, 2),
         )
 
-    def _create_upcoming_tracks_panel_vertical(self, upcoming_tracks: List[Dict[str, Any]]) -> Panel:
+    def _create_upcoming_tracks_panel_vertical(
+        self, upcoming_tracks: List[Dict[str, Any]]
+    ) -> Panel:
         """Create vertical panel for upcoming tracks with more space."""
         if not upcoming_tracks:
             content = "\n[dim]No upcoming tracks in queue[/dim]\n"
@@ -705,7 +779,9 @@ class LiveStatsCollector:
                 if track["name"] == "No upcoming tracks":
                     lines.append(f"[dim]{track['name']}[/dim]")
                 else:
-                    lines.append(f"{i}. [bold]{track['name']}[/bold] - [dim]{artist_str}[/dim]")
+                    lines.append(
+                        f"{i}. [bold]{track['name']}[/bold] - [dim]{artist_str}[/dim]"
+                    )
             lines.append("")
             content = "\n".join(lines)
 
@@ -756,7 +832,9 @@ def print_current_track(track: CurrentTrack):
     console = Console()
 
     # Calculate progress
-    progress_pct = (track.progress_ms / track.duration_ms) * 100 if track.duration_ms > 0 else 0
+    progress_pct = (
+        (track.progress_ms / track.duration_ms) * 100 if track.duration_ms > 0 else 0
+    )
 
     # Create a beautiful track info display with consistent spacing
     track_info = Table.grid(padding=(0, 1))
@@ -764,9 +842,13 @@ def print_current_track(track: CurrentTrack):
     track_info.add_column(style="white")
 
     # Add track details with consistent icons and spacing
-    track_info.add_row("🎵", f"[bold bright_white]{track.track_name}[/bold bright_white]")
+    track_info.add_row(
+        "🎵", f"[bold bright_white]{track.track_name}[/bold bright_white]"
+    )
     track_info.add_row("", "")  # Spacing
-    track_info.add_row("�", f"[bright_yellow]{', '.join(track.artist_names)}[/bright_yellow]")
+    track_info.add_row(
+        "�", f"[bright_yellow]{', '.join(track.artist_names)}[/bright_yellow]"
+    )
     track_info.add_row("", "")  # Spacing
     track_info.add_row("💿", f"[dim bright_white]{track.album_name}[/dim bright_white]")
     track_info.add_row("", "")  # Spacing
@@ -774,7 +856,9 @@ def print_current_track(track: CurrentTrack):
     # Status with consistent styling
     status_icon = "▶️" if track.is_playing else "⏸️"
     status_text = (
-        "[bright_green]Playing[/bright_green]" if track.is_playing else "[bright_yellow]Paused[/bright_yellow]"
+        "[bright_green]Playing[/bright_green]"
+        if track.is_playing
+        else "[bright_yellow]Paused[/bright_yellow]"
     )
     track_info.add_row(status_icon, status_text)
     track_info.add_row("", "")  # Spacing
@@ -788,8 +872,13 @@ def print_current_track(track: CurrentTrack):
     # Progress bar with better visual
     progress_blocks = int(progress_pct // 2)
     remaining_blocks = 50 - progress_blocks
-    progress_bar = f"[bright_green]{'█' * progress_blocks}[/bright_green]" + f"[dim]{'░' * remaining_blocks}[/dim]"
-    track_info.add_row("📊", f"{progress_bar} [bright_cyan]{progress_pct:.1f}%[/bright_cyan]")
+    progress_bar = (
+        f"[bright_green]{'█' * progress_blocks}[/bright_green]"
+        + f"[dim]{'░' * remaining_blocks}[/dim]"
+    )
+    track_info.add_row(
+        "📊", f"{progress_bar} [bright_cyan]{progress_pct:.1f}%[/bright_cyan]"
+    )
     track_info.add_row("", "")  # Spacing
 
     # Popularity with stars

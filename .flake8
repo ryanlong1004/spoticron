@@ -1,6 +1,6 @@
 [flake8]
-max-line-length = 120
-exclude = 
+max-line-length = 88
+exclude =
     venv,
     .venv,
     __pycache__,
@@ -10,13 +10,15 @@ exclude =
     dist,
     .tox,
     node_modules
-ignore = 
+ignore =
     # E203: whitespace before ':' (conflicts with black formatting)
     E203,
+    # E501: line too long (handled by black)
+    E501,
     # W503: line break before binary operator (conflicts with black)
     W503
 per-file-ignores =
     # Tests can have longer lines and unused imports
-    tests/*.py:F401,E501
+    tests/*.py:F401
     # __init__.py files often have unused imports
     __init__.py:F401

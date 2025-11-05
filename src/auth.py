@@ -46,7 +46,9 @@ class SpotifyAuthenticator:
 
         # Set up cache directory
         if cache_path is None:
-            cache_path = os.getenv("TOKEN_CACHE_PATH", "data/cache/.spotify_token_cache")
+            cache_path = os.getenv(
+                "TOKEN_CACHE_PATH", "data/cache/.spotify_token_cache"
+            )
 
         self.cache_path = Path(cache_path)
         self.cache_path.parent.mkdir(parents=True, exist_ok=True)
@@ -108,7 +110,9 @@ class SpotifyAuthenticator:
         if not token_info:
             # No cached token, need to authenticate
             auth_url = self.sp_oauth.get_authorize_url()
-            print(f"\nPlease visit this URL to authorize the application:\n{auth_url}\n")
+            print(
+                f"\nPlease visit this URL to authorize the application:\n{auth_url}\n"
+            )
 
             response = input("Enter the URL you were redirected to: ").strip()
 
@@ -197,7 +201,9 @@ if __name__ == "__main__":
         user_info = auth.get_user_info()
 
         if user_info:
-            print(f"Successfully authenticated as: {user_info['display_name']} ({user_info['id']})")
+            print(
+                f"Successfully authenticated as: {user_info['display_name']} ({user_info['id']})"
+            )
         else:
             print("Authentication successful but couldn't get user info.")
 

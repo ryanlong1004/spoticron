@@ -2,7 +2,7 @@
 
 <div align="center">
   <img src="assets/spoticron.png" alt="Spoticron Logo" width="300"/>
-  
+
   [![GitHub release](https://img.shields.io/github/v/release/ryanlong1004/spoticron)](https://github.com/ryanlong1004/spoticron/releases)
   [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
