@@ -3,10 +3,11 @@
 <div align="center">
   <img src="assets/spoticron.png" alt="Spoticron Logo" width="300"/>
 
-  [![GitHub release](https://img.shields.io/github/v/release/ryanlong1004/spoticron)](https://github.com/ryanlong1004/spoticron/releases)
-  [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-  [![Spotify API](https://img.shields.io/badge/Spotify-API-1DB954.svg)](https://developer.spotify.com/documentation/web-api/)
+[![GitHub release](https://img.shields.io/github/v/release/ryanlong1004/spoticron)](https://github.com/ryanlong1004/spoticron/releases)
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Spotify API](https://img.shields.io/badge/Spotify-API-1DB954.svg)](https://developer.spotify.com/documentation/web-api/)
+
 </div>
 
 A comprehensive command-line tool for analyzing your Spotify listening habits with both live statistics and historical analysis.
@@ -21,47 +22,113 @@ A comprehensive command-line tool for analyzing your Spotify listening habits wi
 - 💾 **Data Export**: Export your listening data for further analysis
 - 🎧 **Live Monitoring**: Real-time monitoring of your listening activity
 
-## Installation
+## Quick Start
+
+Get Spoticron running in under 5 minutes:
+
+### Prerequisites
+
+- **Python 3.8+** ([Download here](https://www.python.org/downloads/))
+- **Spotify account** (Free or Premium)
+- **Git** ([Download here](https://git-scm.com/downloads))
+
+### Installation
 
 1. **Clone the repository**:
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/ryanlong1004/spoticron.git
    cd spoticron
    ```
 
-2. **Create a virtual environment**:
+2. **Install dependencies**:
 
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
-
-3. **Install dependencies**:
    ```bash
    pip install -r requirements.txt
    ```
 
-## Spotify API Setup
+3. **Set up Spotify API** (2 minutes):
 
-1. Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
-2. Log in with your Spotify account
-3. Click "Create an App"
-4. Fill in the app details:
-   - **App Name**: Spoticron (or any name you prefer)
-   - **App Description**: Personal Spotify analytics tool
-5. After creating the app, note down your **Client ID** and **Client Secret**
-6. In your app settings, add this redirect URI: `http://127.0.0.1:8080`
+   - Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
+   - Click "Create an App" → Fill any name/description → Click "Create"
+   - Copy your **Client ID** and **Client Secret**
+   - In app settings, add redirect URI: `http://127.0.0.1:8080`
 
-## Configuration
+4. **Configure Spoticron**:
 
-1. **Copy the example environment file**:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your Client ID and Client Secret
+   ```
+
+5. **Test it works**:
+   ```bash
+   python spoticron.py auth
+   ```
+
+🎉 **You're ready!** Try `python spoticron.py current` to see your currently playing track.
+
+---
+
+## Detailed Setup Guide
+
+### Complete Installation
+
+For users who prefer more detailed instructions:
+
+1. **System Requirements**:
+
+   - Python 3.8 or higher
+   - Git (for cloning)
+   - Internet connection
+   - Spotify account (Free or Premium)
+
+2. **Clone and Setup**:
+
+   ```bash
+   git clone https://github.com/ryanlong1004/spoticron.git
+   cd spoticron
+   pip install -r requirements.txt
+   ```
+
+3. **Create Spotify App** (if not done in Quick Start):
+   - Follow the Spotify API Setup section below
+
+### Spotify API Setup (Detailed)
+
+## Spotify API Setup (Detailed)
+
+If you need more detailed guidance for Spotify API setup:
+
+1. **Visit** [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
+2. **Log in** with your Spotify account
+3. **Create App**:
+
+   - Click "Create an App"
+   - **App Name**: `Spoticron` (or any name)
+   - **App Description**: `Personal Spotify analytics`
+   - Check the boxes for Terms of Service
+   - Click "Create"
+
+4. **Get Your Credentials**:
+
+   - On your app's page, you'll see **Client ID** (copy this)
+   - Click "Show Client Secret" and copy the **Client Secret**
+   - ⚠️ **Keep these private!** Don't share them publicly
+
+5. **Set Redirect URI**:
+
+   - Click "Edit Settings"
+   - In "Redirect URIs", add: `http://127.0.0.1:8080`
+   - Click "Add" then "Save"
+
+6. **Configure Spoticron**:
 
    ```bash
    cp .env.example .env
    ```
 
-2. **Edit `.env` with your Spotify credentials**:
+   Edit `.env` file:
 
    ```env
    SPOTIFY_CLIENT_ID=your_client_id_here
@@ -69,64 +136,149 @@ A comprehensive command-line tool for analyzing your Spotify listening habits wi
    SPOTIFY_REDIRECT_URI=http://127.0.0.1:8080
    ```
 
-3. **Test your setup**:
-   ```bash
-   python spoticron.py auth
-   ```
+### First Time Authentication
 
-## Usage
+Run the auth command and follow the prompts:
+
+```bash
+python spoticron.py auth
+```
+
+This will:
+
+1. Open your browser to Spotify's authorization page
+2. Ask you to log in and grant permissions
+3. Redirect to a page that may show "This site can't be reached" - **this is normal!**
+4. Copy the entire URL from your browser's address bar
+5. Paste it back into the terminal
+
+✅ **Success!** You should see your Spotify username displayed.
+
+## Usage & Examples
 
 ### Basic Commands
 
-**Show currently playing track**:
+**Check what's currently playing**:
 
 ```bash
 python spoticron.py current
-python spoticron.py current --show-details  # Detailed view
 ```
 
-**View recent tracks**:
+<details>
+<summary>📋 Example Output</summary>
+
+```
+♪ Now Playing ♪
+🎵 Bohemian Rhapsody
+👤 Queen
+💿 A Night at the Opera
+⏱️  2:35 / 5:55
+📊 ████████░░░░░░░░░░ 45.2%
+⭐ ⭐⭐⭐⭐☆ (85/100)
+```
+
+</details>
+
+**View your recent listening history**:
 
 ```bash
 python spoticron.py recent
-python spoticron.py recent --limit 20 --detailed
 ```
 
-**Get top tracks and artists**:
+<details>
+<summary>📋 Example Output</summary>
+
+```
+🎵 Recently Played Tracks
+┏━━━━┳━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━┓
+┃ #  ┃ Track              ┃ Artist             ┃
+┡━━━━╇━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━┩
+│ 1  │ Stairway to Heaven │ Led Zeppelin       │
+│ 2  │ Hotel California   │ Eagles             │
+│ 3  │ Sweet Child O Mine │ Guns N' Roses      │
+└────┴────────────────────┴────────────────────┘
+```
+
+</details>
+
+**Discover your top music**:
 
 ```bash
 python spoticron.py top-tracks --time-range short_term
-python spoticron.py top-artists --time-range medium_term
 ```
 
-Time ranges:
+<details>
+<summary>📋 Example Output</summary>
 
-- `short_term`: Last 4 weeks
-- `medium_term`: Last 6 months
-- `long_term`: All time
+```
+🏆 Top 10 Tracks - Last 4 Weeks
+┏━━━━━━┳━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+┃ Rank ┃ Track              ┃ Artist             ┃ Popularity ┃
+┡━━━━━━╇━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━┩
+│ 1    │ Blinding Lights    │ The Weeknd         │ 88/100     │
+│ 2    │ Levitating         │ Dua Lipa           │ 85/100     │
+│ 3    │ Good 4 U           │ Olivia Rodrigo     │ 79/100     │
+└──────┴────────────────────┴────────────────────┴────────────┘
+```
 
-### Advanced Analysis
+**Time periods available:**
 
-**Comprehensive historical analysis**:
+- `short_term`: Last 4 weeks (your current favorites)
+- `medium_term`: Last 6 months (recent trends)
+- `long_term`: All time (your classics)
+</details>
+
+### Advanced Features
+
+<details>
+<summary>🔬 <strong>Deep Analysis</strong> - Comprehensive listening insights</summary>
 
 ```bash
 python spoticron.py analyze
 python spoticron.py analyze --export  # Save results to JSON
 ```
 
-**Monitor listening activity**:
+Provides:
+
+- **Listening Evolution**: How your taste has changed over time
+- **Diversity Metrics**: Variety in your music selection
+- **Mood Analysis**: Emotional patterns in your music
+- **Discovery Patterns**: Rate of finding new music
+
+</details>
+
+<details>
+<summary>👁️ <strong>Live Monitoring</strong> - Real-time listening tracker</summary>
 
 ```bash
 python spoticron.py monitor --duration 10 --interval 30
 ```
 
-**Export your data**:
+Monitors your listening activity in real-time:
+
+- Track what you're listening to every 30 seconds
+- Run for 10 minutes (or any duration you choose)
+- Perfect for understanding your listening sessions
+
+</details>
+
+<details>
+<summary>💾 <strong>Data Export</strong> - Backup your listening data</summary>
 
 ```bash
 python spoticron.py export
 ```
 
-### Help and Setup
+Exports your complete listening history to JSON format for:
+
+- Personal backups
+- Data analysis in other tools
+- Long-term archival
+- Privacy control
+
+</details>
+
+### Getting Help
 
 **View setup guide**:
 
@@ -141,7 +293,90 @@ python spoticron.py --help
 python spoticron.py current --help
 ```
 
-## Data Storage
+---
+
+## Troubleshooting
+
+### Common First-Time Issues
+
+<details>
+<summary>🚫 <strong>"Invalid client" or authentication errors</strong></summary>
+
+**Problem**: `Invalid client` or `INVALID_CLIENT: Invalid redirect URI`
+
+**Solutions**:
+
+1. **Check your credentials**: Verify Client ID and Client Secret are copied correctly (no extra spaces)
+2. **Verify redirect URI**: Must be exactly `http://127.0.0.1:8080` in both Spotify dashboard and `.env` file
+3. **Case sensitivity**: Make sure there are no typos in your `.env` file variable names
+4. **Restart**: Try running `python spoticron.py auth` again
+
+</details>
+
+<details>
+<summary>🔗 <strong>"This site can't be reached" after Spotify login</strong></summary>
+
+**Problem**: Browser shows error page after Spotify authorization
+
+**This is normal!** Just copy the URL from your browser's address bar and paste it back into the terminal. The URL contains the authorization code Spoticron needs.
+
+</details>
+
+<details>
+<summary>📁 <strong>"Permission denied" or file errors</strong></summary>
+
+**Problem**: Can't create files or access database
+
+**Solutions**:
+
+1. **Check permissions**: Make sure you can write to the current directory
+2. **Create data directory**: `mkdir -p data/cache data/exports data/backups`
+3. **Run from project root**: Make sure you're in the `spoticron/` directory when running commands
+
+</details>
+
+<details>
+<summary>🎵 <strong>"No current track" or empty results</strong></summary>
+
+**Problem**: Commands return no data
+
+**Reasons**:
+
+- **Nothing playing**: Start playing music on Spotify first
+- **Private session**: Disable private session in Spotify settings
+- **Account type**: Some features require Spotify Premium
+- **Recent activity**: Recent tracks only shows last 50 plays
+
+</details>
+
+<details>
+<summary>🐍 <strong>Python or pip issues</strong></summary>
+
+**Problem**: `python` command not found or version issues
+
+**Solutions**:
+
+1. **Check Python version**: `python --version` (need 3.8+)
+2. **Try python3**: Use `python3` instead of `python`
+3. **Virtual environment**: Consider using `python -m venv venv` then `source venv/bin/activate`
+4. **Install Python**: Visit [python.org](https://www.python.org/downloads/)
+
+</details>
+
+### Getting More Help
+
+1. **Check this troubleshooting section** for common issues
+2. **Review the [Spotify API documentation](https://developer.spotify.com/documentation/web-api/)**
+3. **Open an issue** on the GitHub repository with:
+   - Your error message
+   - Your Python version (`python --version`)
+   - Steps you tried
+
+---
+
+## Technical Details
+
+### Data Storage
 
 Spoticron stores your data locally in:
 
@@ -150,27 +385,47 @@ Spoticron stores your data locally in:
 - **Exports**: Data exports in `data/exports/`
 - **Backups**: Database backups in `data/backups/`
 
-## Features in Detail
+### Privacy and Data
 
-### Live Statistics
+- **Local storage only**: All data stays on your machine
+- **No external servers**: Only communicates with Spotify's official API
+- **Full control**: Delete everything by removing the `data/` directory
+- **Readable exports**: JSON format for transparency
+- **Secure authentication**: Uses industry-standard OAuth 2.0
 
-- Current playing track with detailed information
-- Recently played tracks with timestamps
-- Real-time monitoring capabilities
+### Features in Detail
 
-### Historical Analysis
+<details>
+<summary><strong>Live Statistics</strong></summary>
 
-- **Evolution Analysis**: How your music taste has changed over time
-- **Diversity Metrics**: Measure of how diverse your listening habits are
-- **Mood Analysis**: Analyze the mood of your music based on audio features
-- **Discovery Patterns**: Track how often you discover new music
+- **Current Track**: Real-time information about what's playing
+- **Recent History**: Last 50 played tracks with timestamps
+- **Progress Tracking**: Visual progress bars and playback position
+- **Rich Formatting**: Beautiful terminal output with colors and symbols
 
-### Data Management
+</details>
 
-- Automatic data persistence
-- Export capabilities (JSON format)
-- Database backups
-- Data cleanup utilities
+<details>
+<summary><strong>Historical Analysis</strong></summary>
+
+- **Evolution Analysis**: How your music taste has changed over time periods
+- **Diversity Metrics**: Mathematical analysis of your listening variety
+- **Mood Analysis**: Emotional patterns based on Spotify's audio features
+- **Discovery Patterns**: Rate and frequency of finding new music
+- **Trend Detection**: Identify patterns in your listening behavior
+
+</details>
+
+<details>
+<summary><strong>Data Management</strong></summary>
+
+- **Automatic Persistence**: Seamless background data storage
+- **Multiple Export Formats**: JSON exports for data portability
+- **Database Backups**: Automatic backup system for data safety
+- **Cleanup Utilities**: Tools to manage and organize your data
+- **Migration Support**: Easy data transfer between installations
+
+</details>
 
 ## Project Structure
 
@@ -180,13 +435,13 @@ spoticron/
 │   ├── auth.py              # Spotify authentication
 │   ├── live_stats.py        # Live statistics collection
 │   ├── historical_stats.py  # Historical analysis
-│   └── data_storage.py      # Data persistence
-├── data/                    # Data directory
+│   ├── data_storage.py      # Data persistence
+│   └── utils.py            # Utility functions
+├── tests/                  # Unit tests
+├── data/                   # Data directory (created automatically)
 │   ├── cache/              # Token cache
 │   ├── exports/            # Data exports
 │   └── backups/            # Database backups
-├── config/                 # Configuration files
-├── tests/                  # Unit tests
 ├── spoticron.py           # Main CLI interface
 ├── requirements.txt       # Python dependencies
 ├── .env.example          # Environment template
@@ -195,12 +450,15 @@ spoticron/
 
 ## Dependencies
 
+Core dependencies (automatically installed):
+
 - **spotipy**: Spotify Web API wrapper
 - **click**: Command-line interface creation
-- **rich**: Rich text and beautiful formatting
+- **rich**: Beautiful terminal formatting
 - **sqlalchemy**: Database ORM
-- **pandas**: Data analysis
 - **python-dotenv**: Environment variable management
+
+Development dependencies are separate in `requirements-dev.txt`.
 
 ## Troubleshooting
 
