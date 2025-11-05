@@ -12,7 +12,10 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from .auth import SpotifyAuthenticator
+try:
+    from .auth import SpotifyAuthenticator
+except ImportError:
+    from auth import SpotifyAuthenticator
 
 
 @dataclass

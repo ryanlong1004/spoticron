@@ -10,7 +10,10 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import spotipy
 
-from .auth import SpotifyAuthenticator
+try:
+    from .auth import SpotifyAuthenticator
+except ImportError:
+    from auth import SpotifyAuthenticator
 
 
 @dataclass
