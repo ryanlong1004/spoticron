@@ -430,6 +430,7 @@ def monitor(duration, interval, previous_tracks, next_tracks):
 @click.option(
     "--format",
     "-f",
+    "export_format",  # This tells Click to pass the value as export_format parameter
     type=click.Choice(["json", "csv"]),
     default="json",
     help="Export format (default: json)",
@@ -635,14 +636,18 @@ def export(export_format, output, data_type, days):
                         progress.remove_task(fresh_task)
 
                         # Generate filename and save
+                        from pathlib import (
+                            Path as PathLib,
+                        )  # Use alias to avoid conflict
+
                         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                         filename = (
                             f"spotify_live_export_{user_id}_{timestamp}.{export_format}"
                         )
                         if output:
-                            export_path = Path(output)
+                            export_path = PathLib(output)
                         else:
-                            export_path = Path("data/exports") / filename
+                            export_path = PathLib("data/exports") / filename
 
                         export_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -679,7 +684,10 @@ def export(export_format, output, data_type, days):
                         console.print(f"📊 File size: {size_str}")
 
                     except Exception as fresh_error:
-                        progress.remove_task(fresh_task)
+                        try:
+                            progress.remove_task(fresh_task)
+                        except KeyError:
+                            pass  # Task might already be removed
                         console.print(
                             "❌ Failed to collect fresh data from Spotify", style="red"
                         )
