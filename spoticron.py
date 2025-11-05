@@ -63,9 +63,7 @@ def handle_auth_error(func):
                     "❌ Authentication failed. Please check your credentials.",
                     style="bold red",
                 )
-                console.print(
-                    "💡 Make sure you have set up your .env file with valid Spotify API credentials."
-                )
+                console.print("💡 Make sure you have set up your .env file with valid Spotify API credentials.")
                 sys.exit(1)
             else:
                 console.print(f"❌ Error: {e}", style="bold red")
@@ -132,9 +130,7 @@ def recent(limit, detailed):
                     table.add_column("Played At", style="yellow")
 
                 for i, track in enumerate(recent_tracks, 1):
-                    played_time = datetime.fromisoformat(
-                        track.played_at.replace("Z", "+00:00")
-                    ).strftime("%H:%M")
+                    played_time = datetime.fromisoformat(track.played_at.replace("Z", "+00:00")).strftime("%H:%M")
 
                     row = [str(i), track.track_name, ", ".join(track.artist_names)]
 
@@ -174,9 +170,7 @@ def top_tracks(time_range, limit):
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
-        task = progress.add_task(
-            f"Getting top tracks ({time_labels[time_range]})...", total=None
-        )
+        task = progress.add_task(f"Getting top tracks ({time_labels[time_range]})...", total=None)
 
         try:
             collector = LiveStatsCollector()
@@ -185,9 +179,7 @@ def top_tracks(time_range, limit):
             progress.remove_task(task)
 
             if top_tracks_data:
-                table = Table(
-                    title=f"🏆 Top {len(top_tracks_data)} Tracks - {time_labels[time_range]}"
-                )
+                table = Table(title=f"🏆 Top {len(top_tracks_data)} Tracks - {time_labels[time_range]}")
                 table.add_column("Rank", style="cyan", width=4)
                 table.add_column("Track", style="magenta")
                 table.add_column("Artist(s)", style="green")
@@ -195,15 +187,9 @@ def top_tracks(time_range, limit):
 
                 for track in top_tracks_data:
                     table.add_row(
-                        str(
-                            track.name.split(".")[0]
-                            if "." in str(track.name)
-                            else len(table.rows) + 1
-                        ),
+                        str(track.name.split(".")[0] if "." in str(track.name) else len(table.rows) + 1),
                         track.name,
-                        ", ".join(track.artist_names)
-                        if track.artist_names
-                        else "Unknown",
+                        ", ".join(track.artist_names) if track.artist_names else "Unknown",
                         f"{track.popularity}/100",
                     )
 
@@ -238,9 +224,7 @@ def top_artists(time_range, limit):
         TextColumn("[progress.description]{task.description}"),
         console=console,
     ) as progress:
-        task = progress.add_task(
-            f"Getting top artists ({time_labels[time_range]})...", total=None
-        )
+        task = progress.add_task(f"Getting top artists ({time_labels[time_range]})...", total=None)
 
         try:
             collector = LiveStatsCollector()
@@ -249,9 +233,7 @@ def top_artists(time_range, limit):
             progress.remove_task(task)
 
             if top_artists_data:
-                table = Table(
-                    title=f"🌟 Top {len(top_artists_data)} Artists - {time_labels[time_range]}"
-                )
+                table = Table(title=f"🌟 Top {len(top_artists_data)} Artists - {time_labels[time_range]}")
                 table.add_column("Rank", style="cyan", width=4)
                 table.add_column("Artist", style="magenta")
                 table.add_column("Genres", style="green")
@@ -327,13 +309,9 @@ def analyze(export):
                     }.get(time_range, time_range)
 
                     console.print(f"\n[cyan]{time_label}:[/cyan]")
-                    console.print(
-                        f"  Unique Artists: {metrics.get('unique_artists', 0)}"
-                    )
+                    console.print(f"  Unique Artists: {metrics.get('unique_artists', 0)}")
                     console.print(f"  Unique Genres: {metrics.get('unique_genres', 0)}")
-                    console.print(
-                        f"  Genre Diversity: {metrics.get('genre_entropy', 0):.2f}"
-                    )
+                    console.print(f"  Genre Diversity: {metrics.get('genre_entropy', 0):.2f}")
 
             # Display discovery patterns
             if discovery:
@@ -354,17 +332,13 @@ def analyze(export):
                     "timestamp": datetime.now().isoformat(),
                 }
 
-                output_file = (
-                    f"data/analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-                )
+                output_file = f"data/analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
                 Path(output_file).parent.mkdir(parents=True, exist_ok=True)
 
                 with open(output_file, "w", encoding="utf-8") as f:
                     json.dump(analysis_data, f, indent=2, ensure_ascii=False)
 
-                console.print(
-                    f"\n💾 Analysis exported to: {output_file}", style="green"
-                )
+                console.print(f"\n💾 Analysis exported to: {output_file}", style="green")
 
         except Exception as e:
             progress.remove_task(task)
@@ -485,9 +459,7 @@ def export(export_format, output, data_type, days):
                 return
 
             user_id = user_info["id"]
-            console.print(
-                f"👤 Exporting data for user: {user_info.get('display_name', user_id)}"
-            )
+            console.print(f"👤 Exporting data for user: {user_info.get('display_name', user_id)}")
 
             # Initialize data manager and export
             progress.update(task, description="Initializing data manager...")
@@ -552,9 +524,7 @@ def export(export_format, output, data_type, days):
                 )
 
                 with progress:
-                    fresh_task = progress.add_task(
-                        "Collecting current Spotify data...", total=None
-                    )
+                    fresh_task = progress.add_task("Collecting current Spotify data...", total=None)
 
                     try:
                         # Collect fresh data from Spotify API
@@ -636,9 +606,7 @@ def export(export_format, output, data_type, days):
 
                         # Generate filename and save
                         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                        filename = (
-                            f"spotify_live_export_{user_id}_{timestamp}.{export_format}"
-                        )
+                        filename = f"spotify_live_export_{user_id}_{timestamp}.{export_format}"
                         if output:
                             export_path = Path(output)
                         else:
@@ -656,16 +624,10 @@ def export(export_format, output, data_type, days):
                             )
                             return
 
-                        console.print(
-                            "✅ Live data exported successfully!", style="green"
-                        )
+                        console.print("✅ Live data exported successfully!", style="green")
                         console.print(f"📁 File location: {export_path}")
-                        console.print(
-                            "💡 This export contains current data from Spotify API"
-                        )
-                        console.print(
-                            "💡 For historical data, run monitoring first: 'spoticron monitor -d 5'"
-                        )
+                        console.print("💡 This export contains current data from Spotify API")
+                        console.print("💡 For historical data, run monitoring first: 'spoticron monitor -d 5'")
 
                         # Show file size
                         file_size = export_path.stat().st_size
@@ -683,24 +645,18 @@ def export(export_format, output, data_type, days):
                             progress.remove_task(fresh_task)
                         except KeyError:
                             pass  # Task might already be removed
-                        console.print(
-                            "❌ Failed to collect fresh data from Spotify", style="red"
-                        )
+                        console.print("❌ Failed to collect fresh data from Spotify", style="red")
                         console.print(f"❌ Error: {fresh_error}", style="red")
                         console.print("💡 This might happen if:")
                         console.print("   • No active Spotify session")
                         console.print("   • API rate limits exceeded")
                         console.print("   • Network connectivity issues")
-                        console.print(
-                            "💡 Try running 'spoticron current' to test your connection"
-                        )
+                        console.print("💡 Try running 'spoticron current' to test your connection")
 
         except Exception as e:
             progress.remove_task(task)
             console.print(f"❌ Error exporting data: {e}", style="red")
-            console.print(
-                "💡 For detailed error information, check your Spotify API credentials"
-            )
+            console.print("💡 For detailed error information, check your Spotify API credentials")
             console.print("💡 Run 'spoticron auth' to verify your connection")
 
 

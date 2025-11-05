@@ -127,9 +127,7 @@ class TopItem(Base):
     user_id = Column(String, ForeignKey("users.id"), nullable=False)
     item_id = Column(String, nullable=False)  # track_id or artist_id
     item_type = Column(String, nullable=False)  # 'track' or 'artist'
-    time_range = Column(
-        String, nullable=False
-    )  # 'short_term', 'medium_term', 'long_term'
+    time_range = Column(String, nullable=False)  # 'short_term', 'medium_term', 'long_term'
     rank = Column(Integer, nullable=False)
     recorded_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -174,9 +172,7 @@ class AnalysisSnapshot(Base):
     period_end = Column(DateTime)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    __table_args__ = (
-        Index("idx_user_analysis_type", "user_id", "analysis_type", "created_at"),
-    )
+    __table_args__ = (Index("idx_user_analysis_type", "user_id", "analysis_type", "created_at"),)
 
 
 @dataclass
@@ -297,9 +293,7 @@ class SpotifyDataManager:
                 session.close()
             return False
 
-    def store_listening_history(
-        self, user_id: str, listening_data: List[Dict[str, Any]]
-    ) -> bool:
+    def store_listening_history(self, user_id: str, listening_data: List[Dict[str, Any]]) -> bool:
         """
         Store listening history data.
 
@@ -316,9 +310,7 @@ class SpotifyDataManager:
             for item in listening_data:
                 # Parse played_at timestamp
                 if isinstance(item.get("played_at"), str):
-                    played_at = datetime.fromisoformat(
-                        item["played_at"].replace("Z", "+00:00")
-                    )
+                    played_at = datetime.fromisoformat(item["played_at"].replace("Z", "+00:00"))
                 else:
                     played_at = item.get("played_at", datetime.utcnow())
 
@@ -427,11 +419,7 @@ class SpotifyDataManager:
                     continue
 
                 # Check if features already exist
-                existing = (
-                    session.query(AudioFeatures)
-                    .filter_by(track_id=features["id"])
-                    .first()
-                )
+                existing = session.query(AudioFeatures).filter_by(track_id=features["id"]).first()
 
                 if not existing:
                     audio_features = AudioFeatures(
@@ -501,11 +489,7 @@ class SpotifyDataManager:
             track_dict = {t.id: t for t in tracks}
 
             # Calculate total listening time
-            total_duration_ms = sum(
-                track_dict[h.track_id].duration_ms
-                for h in history
-                if h.track_id in track_dict
-            )
+            total_duration_ms = sum(track_dict[h.track_id].duration_ms for h in history if h.track_id in track_dict)
 
             listening_stats = {
                 "period_days": days,
@@ -515,12 +499,7 @@ class SpotifyDataManager:
                 "unique_tracks": unique_tracks,
                 "total_listening_time_hours": total_duration_ms / (1000 * 60 * 60),
                 "average_plays_per_day": total_plays / days if days > 0 else 0,
-                "average_listening_hours_per_day": (
-                    total_duration_ms / (1000 * 60 * 60)
-                )
-                / days
-                if days > 0
-                else 0,
+                "average_listening_hours_per_day": (total_duration_ms / (1000 * 60 * 60)) / days if days > 0 else 0,
             }
 
             session.close()
@@ -532,9 +511,7 @@ class SpotifyDataManager:
                 session.close()
             return {}
 
-    def export_user_data(
-        self, user_id: str, export_format: str = "json"
-    ) -> Optional[str]:
+    def export_user_data(self, user_id: str, export_format: str = "json") -> Optional[str]:
         """
         Export all user data to a file.
 
@@ -655,25 +632,15 @@ class SpotifyDataManager:
             cutoff_date = datetime.utcnow() - timedelta(days=days_to_keep)
 
             # Delete old listening history
-            old_history = (
-                session.query(ListeningHistory)
-                .filter(ListeningHistory.created_at < cutoff_date)
-                .delete()
-            )
+            old_history = session.query(ListeningHistory).filter(ListeningHistory.created_at < cutoff_date).delete()
 
             # Delete old analysis snapshots
-            old_snapshots = (
-                session.query(AnalysisSnapshot)
-                .filter(AnalysisSnapshot.created_at < cutoff_date)
-                .delete()
-            )
+            old_snapshots = session.query(AnalysisSnapshot).filter(AnalysisSnapshot.created_at < cutoff_date).delete()
 
             session.commit()
             session.close()
 
-            print(
-                f"Cleaned up {old_history} old listening records and {old_snapshots} old snapshots"
-            )
+            print(f"Cleaned up {old_history} old listening records and {old_snapshots} old snapshots")
             return True
 
         except Exception as e:

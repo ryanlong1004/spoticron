@@ -65,9 +65,7 @@ class HistoricalStatsAnalyzer:
 
         self.spotify = spotify_client
 
-    def get_comprehensive_top_data(
-        self, time_ranges: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
+    def get_comprehensive_top_data(self, time_ranges: Optional[List[str]] = None) -> Dict[str, Any]:
         """
         Get comprehensive top tracks and artists data for multiple time ranges.
 
@@ -88,14 +86,10 @@ class HistoricalStatsAnalyzer:
         for time_range in time_ranges:
             try:
                 # Get top tracks
-                top_tracks = self.spotify.current_user_top_tracks(
-                    time_range=time_range, limit=50
-                )
+                top_tracks = self.spotify.current_user_top_tracks(time_range=time_range, limit=50)
 
                 # Get top artists
-                top_artists = self.spotify.current_user_top_artists(
-                    time_range=time_range, limit=50
-                )
+                top_artists = self.spotify.current_user_top_artists(time_range=time_range, limit=50)
 
                 # Process and enrich data
                 if top_tracks and "items" in top_tracks:
@@ -170,9 +164,7 @@ class HistoricalStatsAnalyzer:
             recent_tracks = self.spotify.current_user_recently_played(limit=50)
 
             # Get top tracks for comparison
-            top_tracks_short = self.spotify.current_user_top_tracks(
-                time_range="short_term", limit=50
-            )
+            top_tracks_short = self.spotify.current_user_top_tracks(time_range="short_term", limit=50)
 
             # Initialize with safe defaults
             if top_tracks_short and "items" in top_tracks_short:
@@ -204,9 +196,7 @@ class HistoricalStatsAnalyzer:
                     new_discoveries.append(
                         {
                             "track_name": track["name"],
-                            "artist_names": [
-                                artist["name"] for artist in track["artists"]
-                            ],
+                            "artist_names": [artist["name"] for artist in track["artists"]],
                             "played_at": item["played_at"],
                             "popularity": track.get("popularity", 0),
                             "preview_url": track.get("preview_url"),
@@ -216,18 +206,14 @@ class HistoricalStatsAnalyzer:
                     rediscovered.append(
                         {
                             "track_name": track["name"],
-                            "artist_names": [
-                                artist["name"] for artist in track["artists"]
-                            ],
+                            "artist_names": [artist["name"] for artist in track["artists"]],
                             "played_at": item["played_at"],
                         }
                     )
 
             discovery_data["new_discoveries"] = new_discoveries
             discovery_data["rediscovered_tracks"] = rediscovered
-            discovery_data["discovery_rate"] = (
-                len(new_discoveries) / total_recent * 100 if total_recent > 0 else 0
-            )
+            discovery_data["discovery_rate"] = len(new_discoveries) / total_recent * 100 if total_recent > 0 else 0
 
             return discovery_data
 
@@ -258,13 +244,7 @@ class HistoricalStatsAnalyzer:
                 genres = data["genres"]
 
                 # Calculate diversity metrics
-                unique_artists = len(
-                    set(
-                        artist_id
-                        for track in tracks
-                        for artist_id in track.get("artist_ids", [])
-                    )
-                )
+                unique_artists = len(set(artist_id for track in tracks for artist_id in track.get("artist_ids", [])))
 
                 unique_genres = len(genres)
 
@@ -277,16 +257,12 @@ class HistoricalStatsAnalyzer:
                     for artist_name in track.get("artist_names", []):
                         artist_play_distribution[artist_name] += 1
 
-                artist_entropy = self._calculate_entropy(
-                    list(artist_play_distribution.values())
-                )
+                artist_entropy = self._calculate_entropy(list(artist_play_distribution.values()))
 
                 # Audio features diversity
                 audio_features = data.get("audio_features", {})
                 if audio_features:
-                    feature_diversity = self._calculate_audio_feature_diversity(
-                        audio_features
-                    )
+                    feature_diversity = self._calculate_audio_feature_diversity(audio_features)
                 else:
                     feature_diversity = 0.0
 
@@ -296,11 +272,7 @@ class HistoricalStatsAnalyzer:
                     "genre_entropy": genre_entropy,
                     "artist_entropy": artist_entropy,
                     "audio_feature_diversity": feature_diversity,
-                    "top_genre_dominance": (
-                        genres[0][1] / sum(count for _, count in genres) * 100
-                        if genres
-                        else 0
-                    ),
+                    "top_genre_dominance": (genres[0][1] / sum(count for _, count in genres) * 100 if genres else 0),
                 }
 
             return diversity_metrics
@@ -356,9 +328,7 @@ class HistoricalStatsAnalyzer:
 
                 # Get dominant mood safely
                 if mood_scores and any(score > 0 for score in mood_scores.values()):
-                    dominant_mood = max(
-                        mood_scores.keys(), key=lambda mood: mood_scores[mood]
-                    )
+                    dominant_mood = max(mood_scores.keys(), key=lambda mood: mood_scores[mood])
                 else:
                     dominant_mood = "unknown"
 
@@ -401,9 +371,7 @@ class HistoricalStatsAnalyzer:
 
         return processed_tracks
 
-    def _process_top_artists(
-        self, artists: List[Dict[str, Any]]
-    ) -> List[Dict[str, Any]]:
+    def _process_top_artists(self, artists: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Process and enrich top artists data."""
         processed_artists = []
 
@@ -422,9 +390,7 @@ class HistoricalStatsAnalyzer:
 
         return processed_artists
 
-    def _extract_genres_from_artists(
-        self, artists: List[Dict[str, Any]]
-    ) -> List[Tuple[str, int]]:
+    def _extract_genres_from_artists(self, artists: List[Dict[str, Any]]) -> List[Tuple[str, int]]:
         """Extract and count genres from artists."""
         genre_counter = Counter()
 
@@ -446,9 +412,7 @@ class HistoricalStatsAnalyzer:
             except Exception as api_error:
                 # Check if it's a 403 error (likely due to app restrictions)
                 if "403" in str(api_error):
-                    print(
-                        "⚠️  Audio features unavailable (likely due to Spotify app restrictions)"
-                    )
+                    print("⚠️  Audio features unavailable (likely due to Spotify app restrictions)")
                     print("   Your analysis will continue without audio feature data.")
                     return {}
                 else:
@@ -527,9 +491,7 @@ class HistoricalStatsAnalyzer:
                     "name": artist_name,
                     "id": artist_id,
                     "long_term_rank": artist_rankings["long_term"][artist_id]["rank"],
-                    "medium_term_rank": artist_rankings["medium_term"][artist_id][
-                        "rank"
-                    ],
+                    "medium_term_rank": artist_rankings["medium_term"][artist_id]["rank"],
                     "short_term_rank": artist_rankings["short_term"][artist_id]["rank"],
                 }
             )
@@ -543,9 +505,7 @@ class HistoricalStatsAnalyzer:
                     {
                         "name": artist_name,
                         "id": artist_id,
-                        "short_term_rank": artist_rankings["short_term"][artist_id][
-                            "rank"
-                        ],
+                        "short_term_rank": artist_rankings["short_term"][artist_id]["rank"],
                     }
                 )
 
@@ -570,9 +530,7 @@ class HistoricalStatsAnalyzer:
 
         return genre_evolution
 
-    def _analyze_audio_features_evolution(
-        self, all_data: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _analyze_audio_features_evolution(self, all_data: Dict[str, Any]) -> Dict[str, Any]:
         """Analyze how audio feature preferences have evolved."""
         audio_evolution = {}
 
@@ -601,9 +559,7 @@ class HistoricalStatsAnalyzer:
 
         return entropy
 
-    def _calculate_audio_feature_diversity(
-        self, audio_features: Dict[str, float]
-    ) -> float:
+    def _calculate_audio_feature_diversity(self, audio_features: Dict[str, float]) -> float:
         """Calculate diversity score based on audio features."""
         if not audio_features:
             return 0.0
@@ -624,16 +580,12 @@ class HistoricalStatsAnalyzer:
         if mean_val == 0:
             return 0.0
 
-        variance = sum((x - mean_val) ** 2 for x in feature_values) / len(
-            feature_values
-        )
+        variance = sum((x - mean_val) ** 2 for x in feature_values) / len(feature_values)
         std_dev = variance**0.5
 
         return std_dev / mean_val  # Coefficient of variation
 
-    def _calculate_mood_scores(
-        self, audio_features: Dict[str, float]
-    ) -> Dict[str, float]:
+    def _calculate_mood_scores(self, audio_features: Dict[str, float]) -> Dict[str, float]:
         """Calculate mood scores based on audio features."""
         moods = {
             "energetic": 0.0,
@@ -694,16 +646,12 @@ def format_evolution_summary(evolution_data: Dict[str, Any]) -> str:
     # Artist evolution
     artist_evo = evolution_data.get("artist_evolution", {})
     if artist_evo.get("stable_favorites"):
-        summary.append(
-            f"\n🌟 Stable Favorites ({len(artist_evo['stable_favorites'])} artists):"
-        )
+        summary.append(f"\n🌟 Stable Favorites ({len(artist_evo['stable_favorites'])} artists):")
         for artist in artist_evo["stable_favorites"][:5]:
             summary.append(f"  • {artist['name']}")
 
     if artist_evo.get("new_discoveries"):
-        summary.append(
-            f"\n🆕 New Discoveries ({len(artist_evo['new_discoveries'])} artists):"
-        )
+        summary.append(f"\n🆕 New Discoveries ({len(artist_evo['new_discoveries'])} artists):")
         for artist in artist_evo["new_discoveries"][:5]:
             summary.append(f"  • {artist['name']}")
 
@@ -712,9 +660,7 @@ def format_evolution_summary(evolution_data: Dict[str, Any]) -> str:
     if "short_term" in genre_evo:
         summary.append("\n🎵 Current Top Genres:")
         for genre_data in genre_evo["short_term"][:5]:
-            summary.append(
-                f"  • {genre_data['genre']} ({genre_data['percentage']:.1f}%)"
-            )
+            summary.append(f"  • {genre_data['genre']} ({genre_data['percentage']:.1f}%)")
 
     return "\n".join(summary)
 
