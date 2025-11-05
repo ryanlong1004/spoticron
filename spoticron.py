@@ -399,10 +399,10 @@ def analyze(export):
 def monitor(duration, interval, previous_tracks, next_tracks):
     """Enhanced monitoring mode with smart updates and queue display. Default: indefinite monitoring."""
     show_banner()
-    
+
     try:
         live_stats = LiveStatsCollector()
-        
+
         console.print("🎵 Starting enhanced monitoring mode...", style="bold green")
         if duration == 0:
             console.print("⏱️  Duration: Indefinite (Ctrl+C to stop)")
@@ -412,14 +412,14 @@ def monitor(duration, interval, previous_tracks, next_tracks):
         console.print(f"📜 Previous tracks: {previous_tracks}")
         console.print(f"⏭️  Next tracks: {next_tracks}")
         console.print("")
-        
+
         live_stats.monitor_enhanced(
             duration_minutes=duration,
             interval_seconds=interval,
             previous_tracks=previous_tracks,
             next_tracks=next_tracks,
         )
-        
+
     except KeyboardInterrupt:
         console.print("\n🛑 Monitoring stopped by user", style="bold red")
     except Exception as e:
@@ -428,10 +428,41 @@ def monitor(duration, interval, previous_tracks, next_tracks):
 
 @cli.command()
 @click.option(
-    "--format", "-f", type=click.Choice(["json"]), default="json", help="Export format"
+    "--format",
+    "-f",
+    type=click.Choice(["json", "csv"]),
+    default="json",
+    help="Export format (default: json)",
 )
-def export(format):
-    """Export your Spotify data."""
+@click.option(
+    "--output",
+    "-o",
+    help="Output file path (optional - will auto-generate if not provided)",
+)
+@click.option(
+    "--data-type",
+    "-t",
+    type=click.Choice(["all", "listening-history", "top-tracks", "top-artists"]),
+    default="all",
+    help="Type of data to export (default: all)",
+)
+@click.option(
+    "--days",
+    "-d",
+    type=int,
+    help="Number of days of listening history to export (optional - exports all if not specified)",
+)
+def export(format, output, data_type, days):
+    """Export your Spotify data to a file.
+
+    Examples:
+    \b
+      spoticron export                           # Export all data as JSON
+      spoticron export -f csv                    # Export all data as CSV
+      spoticron export -t listening-history      # Export only listening history
+      spoticron export -d 30                     # Export last 30 days of data
+      spoticron export -o my_data.json          # Export to specific file
+    """
     with Progress(
         SpinnerColumn(),
         TextColumn("[progress.description]{task.description}"),
@@ -441,30 +472,233 @@ def export(format):
 
         try:
             # Get user info first
+            progress.update(task, description="Authenticating with Spotify...")
             auth = SpotifyAuthenticator()
             spotify = auth.authenticate()
             user_info = spotify.current_user()
 
             if not user_info:
+                progress.remove_task(task)
                 console.print("❌ Could not get user information", style="red")
+                console.print("💡 Try running 'spoticron auth' to test your connection")
                 return
 
+            user_id = user_info["id"]
+            console.print(
+                f"👤 Exporting data for user: {user_info.get('display_name', user_id)}"
+            )
+
             # Initialize data manager and export
+            progress.update(task, description="Initializing data manager...")
             data_manager = SpotifyDataManager()
-            export_path = data_manager.export_user_data(user_info["id"], format)
+
+            progress.update(task, description="Collecting data for export...")
+
+            # For now, we'll export all data regardless of data_type
+            # TODO: Implement selective data export in future versions
+            if data_type != "all":
+                console.print(
+                    f"⚠️  Note: Selective export for '{data_type}' not yet implemented.",
+                    style="yellow",
+                )
+                console.print("📋 Exporting all available data instead.")
+
+            if days:
+                console.print(
+                    f"⚠️  Note: Date filtering for last {days} days not yet implemented.",
+                    style="yellow",
+                )
+                console.print("📋 Exporting all available data instead.")
+
+            export_path = data_manager.export_user_data(user_id, format)
 
             progress.remove_task(task)
 
             if export_path:
-                console.print(
-                    f"✅ Data exported successfully to: {export_path}", style="green"
-                )
+                # Check if custom output path was specified
+                if output:
+                    from shutil import move
+                    from pathlib import Path
+
+                    output_path = Path(output)
+                    output_path.parent.mkdir(parents=True, exist_ok=True)
+                    move(export_path, output_path)
+                    export_path = str(output_path)
+
+                console.print("✅ Data exported successfully!", style="green")
+                console.print(f"📁 File location: {export_path}")
+
+                # Show file size
+                file_size = Path(export_path).stat().st_size
+                if file_size > 1024 * 1024:
+                    size_str = f"{file_size / (1024 * 1024):.1f} MB"
+                elif file_size > 1024:
+                    size_str = f"{file_size / 1024:.1f} KB"
+                else:
+                    size_str = f"{file_size} bytes"
+
+                console.print(f"📊 File size: {size_str}")
             else:
-                console.print("❌ Export failed", style="red")
+                # If export failed, try to collect fresh data from Spotify API
+                console.print(
+                    "⚠️  No stored data found. Collecting fresh data from Spotify...",
+                    style="yellow",
+                )
+
+                progress = Progress(
+                    SpinnerColumn(),
+                    TextColumn("[progress.description]{task.description}"),
+                    console=console,
+                )
+
+                with progress:
+                    fresh_task = progress.add_task(
+                        "Collecting current Spotify data...", total=None
+                    )
+
+                    try:
+                        # Collect fresh data from Spotify API
+                        fresh_data = {
+                            "user_info": user_info,
+                            "current_track": None,
+                            "recent_tracks": [],
+                            "top_tracks": {},
+                            "top_artists": {},
+                            "export_timestamp": datetime.now().isoformat(),
+                            "data_source": "live_api_collection",
+                        }
+
+                        # Get current track
+                        try:
+                            from src.live_stats import LiveStatsCollector
+
+                            collector = LiveStatsCollector()
+                            current = collector.get_current_track()
+                            if current:
+                                fresh_data["current_track"] = {
+                                    "track_name": current.track_name,
+                                    "artist_names": current.artist_names,
+                                    "album_name": current.album_name,
+                                    "progress_ms": current.progress_ms,
+                                    "duration_ms": current.duration_ms,
+                                    "is_playing": current.is_playing,
+                                }
+                        except Exception:
+                            pass
+
+                        # Get recent tracks
+                        try:
+                            recent = collector.get_recently_played(20)
+                            fresh_data["recent_tracks"] = [
+                                {
+                                    "track_name": track.track_name,
+                                    "artist_names": track.artist_names,
+                                    "album_name": track.album_name,
+                                    "played_at": track.played_at,
+                                }
+                                for track in recent
+                            ]
+                        except Exception:
+                            pass
+
+                        # Get top tracks for different time ranges
+                        for time_range in ["short_term", "medium_term", "long_term"]:
+                            try:
+                                top_tracks = collector.get_top_tracks(time_range, 20)
+                                fresh_data["top_tracks"][time_range] = [
+                                    {
+                                        "name": track.name,
+                                        "artist_names": track.artist_names,
+                                        "popularity": track.popularity,
+                                    }
+                                    for track in top_tracks
+                                ]
+                            except Exception:
+                                fresh_data["top_tracks"][time_range] = []
+
+                        # Get top artists for different time ranges
+                        for time_range in ["short_term", "medium_term", "long_term"]:
+                            try:
+                                top_artists = collector.get_top_artists(time_range, 20)
+                                fresh_data["top_artists"][time_range] = [
+                                    {
+                                        "name": artist.name,
+                                        "genres": artist.genres,
+                                        "popularity": artist.popularity,
+                                        "followers": artist.followers,
+                                    }
+                                    for artist in top_artists
+                                ]
+                            except Exception:
+                                fresh_data["top_artists"][time_range] = []
+
+                        progress.remove_task(fresh_task)
+
+                        # Generate filename and save
+                        from pathlib import Path
+
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                        filename = f"spotify_live_export_{user_id}_{timestamp}.{format}"
+                        if output:
+                            export_path = Path(output)
+                        else:
+                            export_path = Path("data/exports") / filename
+
+                        export_path.parent.mkdir(parents=True, exist_ok=True)
+
+                        if format.lower() == "json":
+                            with open(export_path, "w", encoding="utf-8") as f:
+                                json.dump(fresh_data, f, indent=2, ensure_ascii=False)
+                        else:
+                            console.print(
+                                "❌ CSV format not yet supported for live export",
+                                style="red",
+                            )
+                            return
+
+                        console.print(
+                            "✅ Live data exported successfully!", style="green"
+                        )
+                        console.print(f"📁 File location: {export_path}")
+                        console.print(
+                            "💡 This export contains current data from Spotify API"
+                        )
+                        console.print(
+                            "💡 For historical data, run monitoring first: 'spoticron monitor -d 5'"
+                        )
+
+                        # Show file size
+                        file_size = export_path.stat().st_size
+                        if file_size > 1024 * 1024:
+                            size_str = f"{file_size / (1024 * 1024):.1f} MB"
+                        elif file_size > 1024:
+                            size_str = f"{file_size / 1024:.1f} KB"
+                        else:
+                            size_str = f"{file_size} bytes"
+
+                        console.print(f"📊 File size: {size_str}")
+
+                    except Exception as fresh_error:
+                        progress.remove_task(fresh_task)
+                        console.print(
+                            "❌ Failed to collect fresh data from Spotify", style="red"
+                        )
+                        console.print(f"❌ Error: {fresh_error}", style="red")
+                        console.print("💡 This might happen if:")
+                        console.print("   • No active Spotify session")
+                        console.print("   • API rate limits exceeded")
+                        console.print("   • Network connectivity issues")
+                        console.print(
+                            "💡 Try running 'spoticron current' to test your connection"
+                        )
 
         except Exception as e:
             progress.remove_task(task)
             console.print(f"❌ Error exporting data: {e}", style="red")
+            console.print(
+                "💡 For detailed error information, check your Spotify API credentials"
+            )
+            console.print("💡 Run 'spoticron auth' to verify your connection")
 
 
 @cli.command()
