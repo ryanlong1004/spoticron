@@ -3,27 +3,27 @@ Data storage and analysis module for persistent Spotify data management.
 """
 
 import json
+import os
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass
-import os
+from typing import Any, Dict, List, Optional
 
+from dotenv import load_dotenv
 from sqlalchemy import (
-    create_engine,
-    Column,
-    String,
-    Integer,
-    Float,
     Boolean,
+    Column,
     DateTime,
-    Text,
+    Float,
     ForeignKey,
     Index,
+    Integer,
+    String,
+    Text,
+    create_engine,
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()

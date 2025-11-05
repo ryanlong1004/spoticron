@@ -3,12 +3,13 @@ Historical stats module for analyzing Spotify listening patterns over time.
 """
 
 import json
-from datetime import datetime, timezone
-from typing import Dict, List, Optional, Any, Tuple
-from dataclasses import dataclass
 from collections import Counter
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional, Tuple
 
 import spotipy
+
 from .auth import SpotifyAuthenticator
 
 

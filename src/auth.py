@@ -4,12 +4,12 @@ Authentication module for Spotify API integration.
 
 import os
 import time
-from typing import Optional, Dict, Any
 from pathlib import Path
+from typing import Any, Dict, Optional
 
 import spotipy
-from spotipy.oauth2 import SpotifyOAuth
 from dotenv import load_dotenv
+from spotipy.oauth2 import SpotifyOAuth
 
 
 class SpotifyAuthError(Exception):

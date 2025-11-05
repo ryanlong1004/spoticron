@@ -3,11 +3,11 @@ Utility functions for Spoticron application.
 """
 
 import json
+import math
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
-import math
+from typing import Any, Dict, List, Optional
 
 
 def format_duration(milliseconds: int) -> str:

@@ -4,29 +4,29 @@ Spoticron - Spotify Analytics CLI
 Command-line interface for Spotify listening statistics and analysis.
 """
 
-import click
 import json
 import sys
 from datetime import datetime
 from pathlib import Path
 
+import click
 from rich.console import Console
-from rich.table import Table
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.table import Table
 
 # Import our modules
 try:
     from src.auth import SpotifyAuthenticator
-    from src.live_stats import LiveStatsCollector, print_current_track
-    from src.historical_stats import HistoricalStatsAnalyzer, format_evolution_summary
     from src.data_storage import SpotifyDataManager
+    from src.historical_stats import HistoricalStatsAnalyzer, format_evolution_summary
+    from src.live_stats import LiveStatsCollector, print_current_track
 except ImportError:
     # Fallback for direct execution
     from auth import SpotifyAuthenticator
-    from live_stats import LiveStatsCollector, print_current_track
-    from historical_stats import HistoricalStatsAnalyzer, format_evolution_summary
     from data_storage import SpotifyDataManager
+    from historical_stats import HistoricalStatsAnalyzer, format_evolution_summary
+    from live_stats import LiveStatsCollector, print_current_track
 
 console = Console()
 

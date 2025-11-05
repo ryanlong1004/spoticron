@@ -3,9 +3,9 @@ Live stats module for getting real-time Spotify data.
 """
 
 import time
+from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, asdict
+from typing import Any, Dict, List, Optional
 
 import spotipy
 from rich.console import Console
