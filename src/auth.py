@@ -102,6 +102,9 @@ class SpotifyAuthenticator:
         Returns:
             Token info dictionary or None if authentication fails.
         """
+        if self.sp_oauth is None:
+            raise SpotifyAuthError("OAuth handler not initialized")
+
         token_info = self.sp_oauth.get_cached_token()
 
         if not token_info:
@@ -121,9 +124,14 @@ class SpotifyAuthenticator:
                 return None
 
         # Check if token needs refresh
-        if self._is_token_expired(token_info):
+        if token_info and self._is_token_expired(token_info):
             print("Token expired, refreshing...")
-            token_info = self.sp_oauth.refresh_access_token(token_info["refresh_token"])
+            refresh_token = token_info.get("refresh_token")
+            if refresh_token:
+                token_info = self.sp_oauth.refresh_access_token(refresh_token)
+            else:
+                print("No refresh token available")
+                return None
 
         return token_info
 

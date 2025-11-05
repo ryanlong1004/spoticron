@@ -98,16 +98,25 @@ class HistoricalStatsAnalyzer:
                 )
 
                 # Process and enrich data
-                tracks_data = self._process_top_tracks(top_tracks["items"])
-                artists_data = self._process_top_artists(top_artists["items"])
+                if top_tracks and "items" in top_tracks:
+                    tracks_data = self._process_top_tracks(top_tracks["items"])
+                    track_ids = [track["id"] for track in top_tracks["items"]]
+                else:
+                    tracks_data = []
+                    track_ids = []
+
+                if top_artists and "items" in top_artists:
+                    artists_data = self._process_top_artists(top_artists["items"])
+                    genres = self._extract_genres_from_artists(top_artists["items"])
+                else:
+                    artists_data = []
+                    genres = []
 
                 comprehensive_data["time_ranges"][time_range] = {
                     "tracks": tracks_data,
                     "artists": artists_data,
-                    "genres": self._extract_genres_from_artists(top_artists["items"]),
-                    "audio_features": self._get_audio_features_summary(
-                        [track["id"] for track in top_tracks["items"]]
-                    ),
+                    "genres": genres,
+                    "audio_features": self._get_audio_features_summary(track_ids),
                 }
 
             except Exception as e:
@@ -165,11 +174,22 @@ class HistoricalStatsAnalyzer:
                 time_range="short_term", limit=50
             )
 
-            top_track_ids = {track["id"] for track in top_tracks_short["items"]}
+            # Initialize with safe defaults
+            if top_tracks_short and "items" in top_tracks_short:
+                top_track_ids = {track["id"] for track in top_tracks_short["items"]}
+            else:
+                top_track_ids = set()
+
+            if recent_tracks and "items" in recent_tracks:
+                total_recent = len(recent_tracks["items"])
+                recent_items = recent_tracks["items"]
+            else:
+                total_recent = 0
+                recent_items = []
 
             discovery_data = {
                 "timestamp": datetime.now(timezone.utc).isoformat(),
-                "total_recent_tracks": len(recent_tracks["items"]),
+                "total_recent_tracks": total_recent,
                 "new_discoveries": [],
                 "rediscovered_tracks": [],
                 "discovery_rate": 0.0,
@@ -178,7 +198,7 @@ class HistoricalStatsAnalyzer:
             new_discoveries = []
             rediscovered = []
 
-            for item in recent_tracks["items"]:
+            for item in recent_items:
                 track = item["track"]
                 if track["id"] not in top_track_ids:
                     new_discoveries.append(
@@ -206,9 +226,7 @@ class HistoricalStatsAnalyzer:
             discovery_data["new_discoveries"] = new_discoveries
             discovery_data["rediscovered_tracks"] = rediscovered
             discovery_data["discovery_rate"] = (
-                len(new_discoveries) / len(recent_tracks["items"]) * 100
-                if recent_tracks["items"]
-                else 0
+                len(new_discoveries) / total_recent * 100 if total_recent > 0 else 0
             )
 
             return discovery_data
@@ -312,7 +330,7 @@ class HistoricalStatsAnalyzer:
                     continue
 
                 audio_features = data.get("audio_features", {})
-                
+
                 if not audio_features:
                     # No audio features available, provide basic analysis
                     mood_analysis["time_ranges"][time_range] = {
@@ -338,7 +356,9 @@ class HistoricalStatsAnalyzer:
 
                 # Get dominant mood safely
                 if mood_scores and any(score > 0 for score in mood_scores.values()):
-                    dominant_mood = max(mood_scores.keys(), key=lambda mood: mood_scores[mood])
+                    dominant_mood = max(
+                        mood_scores.keys(), key=lambda mood: mood_scores[mood]
+                    )
                 else:
                     dominant_mood = "unknown"
 
@@ -426,7 +446,9 @@ class HistoricalStatsAnalyzer:
             except Exception as api_error:
                 # Check if it's a 403 error (likely due to app restrictions)
                 if "403" in str(api_error):
-                    print("⚠️  Audio features unavailable (likely due to Spotify app restrictions)")
+                    print(
+                        "⚠️  Audio features unavailable (likely due to Spotify app restrictions)"
+                    )
                     print("   Your analysis will continue without audio feature data.")
                     return {}
                 else:
@@ -434,7 +456,10 @@ class HistoricalStatsAnalyzer:
                     raise api_error
 
             # Filter out None values
-            valid_features = [f for f in audio_features if f is not None]
+            if audio_features is not None:
+                valid_features = [f for f in audio_features if f is not None]
+            else:
+                valid_features = []
 
             if not valid_features:
                 return {}
@@ -571,6 +596,7 @@ class HistoricalStatsAnalyzer:
             if value > 0:
                 probability = value / total
                 import math
+
                 entropy -= probability * math.log2(probability)
 
         return entropy

@@ -452,7 +452,7 @@ def monitor(duration, interval, previous_tracks, next_tracks):
     type=int,
     help="Number of days of listening history to export (optional - exports all if not specified)",
 )
-def export(format, output, data_type, days):
+def export(export_format, output, data_type, days):
     """Export your Spotify data to a file.
 
     Examples:
@@ -510,7 +510,7 @@ def export(format, output, data_type, days):
                 )
                 console.print("📋 Exporting all available data instead.")
 
-            export_path = data_manager.export_user_data(user_id, format)
+            export_path = data_manager.export_user_data(user_id, export_format)
 
             progress.remove_task(task)
 
@@ -635,10 +635,10 @@ def export(format, output, data_type, days):
                         progress.remove_task(fresh_task)
 
                         # Generate filename and save
-                        from pathlib import Path
-
                         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                        filename = f"spotify_live_export_{user_id}_{timestamp}.{format}"
+                        filename = (
+                            f"spotify_live_export_{user_id}_{timestamp}.{export_format}"
+                        )
                         if output:
                             export_path = Path(output)
                         else:
@@ -646,7 +646,7 @@ def export(format, output, data_type, days):
 
                         export_path.parent.mkdir(parents=True, exist_ok=True)
 
-                        if format.lower() == "json":
+                        if export_format.lower() == "json":
                             with open(export_path, "w", encoding="utf-8") as f:
                                 json.dump(fresh_data, f, indent=2, ensure_ascii=False)
                         else:
