@@ -10,16 +10,13 @@ Thank you for your interest in contributing to Spoticron! This document provides
    git clone https://github.com/YOUR_USERNAME/spoticron.git
    cd spoticron
    ```
-3. **Create a virtual environment**:
+3. **Set up development environment**:
    ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   make install-dev
+   make setup-pre-commit
    ```
-4. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
-5. **Set up your Spotify API credentials** (see README.md)
+
+For detailed development setup instructions, see [DEVELOPMENT.md](DEVELOPMENT.md). 5. **Set up your Spotify API credentials** (see README.md)
 
 ## Development Guidelines
 

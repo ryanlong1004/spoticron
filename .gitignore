@@ -105,7 +105,16 @@ dmypy.json
 
 # Application specific
 data/cache/
+data/backups/
+data/exports/
 data/*.db
 data/*.sqlite
-*.json
-!config/*.json
+
+# Test output files
+*test*.json
+my_custom_export.json
+final_test.json
+
+# Coverage reports
+coverage.xml
+.coverage

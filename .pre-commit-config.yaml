@@ -34,7 +34,7 @@ repos:
     hooks:
       - id: pylance-check
         name: Pylance Type Checking
-        entry: python -c "print('Pylance checks should be run in your IDE')"
+        entry: echo "Pylance checks should be run in your IDE"
         language: system
         pass_filenames: false
         always_run: true
