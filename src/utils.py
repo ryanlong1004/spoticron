@@ -302,7 +302,10 @@ def retry_on_error(func, max_retries: int = 3, delay: float = 1.0):
             else:
                 break
 
-    raise last_exception
+    if last_exception is not None:
+        raise last_exception
+    else:
+        raise RuntimeError("Function failed with no exception captured")
 
 
 def validate_spotify_id(spotify_id: str) -> bool:

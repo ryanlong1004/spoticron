@@ -231,12 +231,11 @@ class SpotifyDataManager:
             user = session.query(User).filter_by(id=user_data["id"]).first()
 
             if user:
-                # Update existing user
-                user.display_name = user_data.get("display_name")
-                user.email = user_data.get("email")
-                user.country = user_data.get("country")
+                # Update existing user (updated_at will be set automatically by onupdate)
+                user.display_name = user_data.get("display_name") or user.display_name
+                user.email = user_data.get("email") or user.email
+                user.country = user_data.get("country") or user.country
                 user.followers = user_data.get("followers", {}).get("total", 0)
-                user.updated_at = datetime.utcnow()
             else:
                 # Create new user
                 user = User(
@@ -533,7 +532,9 @@ class SpotifyDataManager:
                 session.close()
             return {}
 
-    def export_user_data(self, user_id: str, export_format: str = "json") -> Optional[str]:
+    def export_user_data(
+        self, user_id: str, export_format: str = "json"
+    ) -> Optional[str]:
         """
         Export all user data to a file.
 

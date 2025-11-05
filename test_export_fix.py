@@ -4,10 +4,8 @@ Test script to verify the export command fix works correctly.
 This tests the main scenarios from issue #2.
 """
 
-import os
 import subprocess
 import tempfile
-import json
 from pathlib import Path
 
 
@@ -15,7 +13,7 @@ def run_command(cmd):
     """Run a command and return its output."""
     try:
         result = subprocess.run(
-            cmd, shell=True, capture_output=True, text=True, timeout=30
+            cmd, shell=True, capture_output=True, text=True, timeout=30, check=False
         )
         return result.returncode, result.stdout, result.stderr
     except subprocess.TimeoutExpired:
@@ -26,9 +24,9 @@ def test_export_help():
     """Test that export help shows the new options."""
     print("Testing export help...")
 
-    code, stdout, stderr = run_command("python spoticron.py export --help")
-
-    # Check that help includes new options
+    _, stdout, _ = run_command(
+        "python spoticron.py export --help"
+    )  # Check that help includes new options
     required_options = [
         "--format [json|csv]",
         "--output TEXT",
@@ -76,9 +74,7 @@ def test_export_with_custom_output():
     with tempfile.TemporaryDirectory() as tmpdir:
         output_file = Path(tmpdir) / "test_export.json"
 
-        code, stdout, stderr = run_command(
-            f"python spoticron.py export -o {output_file}"
-        )
+        _, stdout, _ = run_command(f"python spoticron.py export -o {output_file}")
 
         # Check if file was created or helpful error given
         success = (
@@ -104,9 +100,7 @@ def test_export_data_type_warnings():
     """Test that data type options show appropriate warnings."""
     print("Testing data type option warnings...")
 
-    code, stdout, stderr = run_command(
-        "python spoticron.py export -t listening-history"
-    )
+    _, stdout, _ = run_command("python spoticron.py export -t listening-history")
 
     success = "not yet implemented" in stdout
 

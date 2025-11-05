@@ -519,7 +519,6 @@ def export(export_format, output, data_type, days):
                 # Check if custom output path was specified
                 if output:
                     from shutil import move
-                    from pathlib import Path
 
                     output_path = Path(output)
                     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -636,18 +635,14 @@ def export(export_format, output, data_type, days):
                         progress.remove_task(fresh_task)
 
                         # Generate filename and save
-                        from pathlib import (
-                            Path as PathLib,
-                        )  # Use alias to avoid conflict
-
                         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                         filename = (
                             f"spotify_live_export_{user_id}_{timestamp}.{export_format}"
                         )
                         if output:
-                            export_path = PathLib(output)
+                            export_path = Path(output)
                         else:
-                            export_path = PathLib("data/exports") / filename
+                            export_path = Path("data/exports") / filename
 
                         export_path.parent.mkdir(parents=True, exist_ok=True)
 
