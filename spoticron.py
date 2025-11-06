@@ -344,7 +344,12 @@ def playlists(limit):
 @click.option(
     "--limit", "-l", type=int, help="Maximum number of tracks to show (default: all)"
 )
-@click.option("--export", "-e", is_flag=True, help="Export tracks to JSON file")
+@click.option(
+    "--export",
+    "-e",
+    type=click.Choice(["json", "csv"], case_sensitive=False),
+    help="Export tracks to file (json or csv)",
+)
 @click.option("--detailed", "-d", is_flag=True, help="Show detailed track information")
 def playlist_tracks(playlist_id, limit, export, detailed):
     """Show all tracks from a playlist.
@@ -372,23 +377,63 @@ def playlist_tracks(playlist_id, limit, export, detailed):
                 # Export if requested
                 if export:
                     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                    filename = f"playlist_tracks_{timestamp}.json"
                     export_dir = Path("data/exports")
                     export_dir.mkdir(parents=True, exist_ok=True)
-                    export_path = export_dir / filename
 
-                    with open(export_path, "w") as f:
-                        json.dump(
-                            {
-                                "playlist_id": playlist_id,
-                                "playlist_name": playlist_name,
-                                "total_tracks": len(tracks),
-                                "exported_at": datetime.now().isoformat(),
-                                "tracks": tracks,
-                            },
-                            f,
-                            indent=2,
-                        )
+                    if export.lower() == "csv":
+                        # Export as CSV
+                        import csv
+
+                        filename = f"playlist_tracks_{timestamp}.csv"
+                        export_path = export_dir / filename
+
+                        with open(export_path, "w", newline="", encoding="utf-8") as f:
+                            writer = csv.writer(f)
+                            # Write header
+                            writer.writerow(
+                                [
+                                    "Track",
+                                    "Artist(s)",
+                                    "Album",
+                                    "Duration (MM:SS)",
+                                    "Popularity",
+                                    "Explicit",
+                                    "Added At",
+                                    "Spotify URL",
+                                ]
+                            )
+                            # Write track data
+                            for track in tracks:
+                                writer.writerow(
+                                    [
+                                        track["name"],
+                                        ", ".join(track["artists"]),
+                                        track["album"],
+                                        format_duration_simple(track["duration_ms"]),
+                                        track["popularity"],
+                                        "Yes" if track["explicit"] else "No",
+                                        track.get("added_at", "N/A"),
+                                        track.get("external_url", "N/A"),
+                                    ]
+                                )
+                    else:
+                        # Export as JSON
+                        filename = f"playlist_tracks_{timestamp}.json"
+                        export_path = export_dir / filename
+
+                        with open(export_path, "w") as f:
+                            json.dump(
+                                {
+                                    "playlist_id": playlist_id,
+                                    "playlist_name": playlist_name,
+                                    "total_tracks": len(tracks),
+                                    "exported_at": datetime.now().isoformat(),
+                                    "tracks": tracks,
+                                },
+                                f,
+                                indent=2,
+                            )
+
                     console.print(
                         f"✅ Exported {len(tracks)} tracks to {export_path}",
                         style="green",

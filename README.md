@@ -264,7 +264,10 @@ python spoticron.py playlist-tracks <playlist_id>
 python spoticron.py playlist-tracks --detailed
 
 # Export to JSON file
-python spoticron.py playlist-tracks --export
+python spoticron.py playlist-tracks --export json
+
+# Export to CSV file (perfect for Excel/spreadsheets)
+python spoticron.py playlist-tracks --export csv
 ```
 
 <details>
@@ -287,7 +290,11 @@ Summary:
 • Explicit tracks: 89
 ```
 
-**Tip**: Use the `playlists` command to find playlist IDs, or copy them from Spotify URLs.
+**Tips**:
+- Use the `playlists` command to find playlist IDs, or copy them from Spotify URLs
+- CSV exports include: Track name, Artists, Album, Duration, Popularity, Explicit flag, Date added, and Spotify URL
+- CSV files can be opened in Excel, Google Sheets, or any spreadsheet application
+- Perfect for creating backups, analyzing data, or sharing your music collection
 
 </details>
 
