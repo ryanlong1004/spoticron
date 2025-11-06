@@ -250,6 +250,165 @@ class LiveStatsCollector:
             print(f"Error getting top artists: {e}")
             return []
 
+    def get_playlist_tracks(
+        self, playlist_id: Optional[str] = None, limit: Optional[int] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Get all tracks from a playlist, including 'Liked Songs'.
+
+        Args:
+            playlist_id: Spotify playlist ID. If None, fetches user's saved tracks (Liked Songs).
+            limit: Maximum number of tracks to retrieve. If None, fetches all tracks.
+
+        Returns:
+            List of track dictionaries with track details.
+        """
+        try:
+            tracks = []
+            offset = 0
+            batch_size = 50  # Spotify API limit per request
+
+            # Determine which API endpoint to use
+            if playlist_id is None:
+                # Get user's saved tracks (Liked Songs)
+                while True:
+                    results = self.spotify.current_user_saved_tracks(
+                        limit=batch_size, offset=offset
+                    )
+
+                    if not results or "items" not in results:
+                        break
+
+                    for item in results["items"]:
+                        track = item["track"]
+                        track_info = {
+                            "name": track["name"],
+                            "id": track["id"],
+                            "artists": [artist["name"] for artist in track["artists"]],
+                            "artist_ids": [artist["id"] for artist in track["artists"]],
+                            "album": track["album"]["name"],
+                            "album_id": track["album"]["id"],
+                            "duration_ms": track["duration_ms"],
+                            "popularity": track.get("popularity", 0),
+                            "explicit": track.get("explicit", False),
+                            "added_at": item.get("added_at"),
+                            "external_url": track.get("external_urls", {}).get(
+                                "spotify"
+                            ),
+                            "preview_url": track.get("preview_url"),
+                        }
+                        tracks.append(track_info)
+
+                    # Check if we've reached the limit or end of results
+                    if limit and len(tracks) >= limit:
+                        tracks = tracks[:limit]
+                        break
+
+                    if len(results["items"]) < batch_size:
+                        break  # No more results
+
+                    offset += batch_size
+
+            else:
+                # Get tracks from a specific playlist
+                while True:
+                    results = self.spotify.playlist_tracks(
+                        playlist_id, limit=batch_size, offset=offset
+                    )
+
+                    if not results or "items" not in results:
+                        break
+
+                    for item in results["items"]:
+                        if not item or not item.get("track"):
+                            continue  # Skip empty entries
+
+                        track = item["track"]
+                        track_info = {
+                            "name": track["name"],
+                            "id": track["id"],
+                            "artists": [artist["name"] for artist in track["artists"]],
+                            "artist_ids": [artist["id"] for artist in track["artists"]],
+                            "album": track["album"]["name"],
+                            "album_id": track["album"]["id"],
+                            "duration_ms": track["duration_ms"],
+                            "popularity": track.get("popularity", 0),
+                            "explicit": track.get("explicit", False),
+                            "added_at": item.get("added_at"),
+                            "added_by": item.get("added_by", {}).get("id"),
+                            "external_url": track.get("external_urls", {}).get(
+                                "spotify"
+                            ),
+                            "preview_url": track.get("preview_url"),
+                        }
+                        tracks.append(track_info)
+
+                    # Check if we've reached the limit or end of results
+                    if limit and len(tracks) >= limit:
+                        tracks = tracks[:limit]
+                        break
+
+                    if len(results["items"]) < batch_size:
+                        break  # No more results
+
+                    offset += batch_size
+
+            return tracks
+
+        except Exception as e:
+            print(f"Error getting playlist tracks: {e}")
+            return []
+
+    def get_user_playlists(self, limit: int = 50) -> List[Dict[str, Any]]:
+        """
+        Get user's playlists.
+
+        Args:
+            limit: Maximum number of playlists to retrieve.
+
+        Returns:
+            List of playlist dictionaries with playlist details.
+        """
+        try:
+            playlists = []
+            offset = 0
+            batch_size = 50
+
+            while len(playlists) < limit:
+                results = self.spotify.current_user_playlists(
+                    limit=min(batch_size, limit - len(playlists)), offset=offset
+                )
+
+                if not results or "items" not in results:
+                    break
+
+                for playlist in results["items"]:
+                    playlist_info = {
+                        "name": playlist["name"],
+                        "id": playlist["id"],
+                        "owner": playlist["owner"]["display_name"],
+                        "tracks_total": playlist["tracks"]["total"],
+                        "public": playlist.get("public", False),
+                        "collaborative": playlist.get("collaborative", False),
+                        "description": playlist.get("description", ""),
+                        "external_url": playlist.get("external_urls", {}).get(
+                            "spotify"
+                        ),
+                        "images": playlist.get("images", []),
+                    }
+                    playlists.append(playlist_info)
+
+                if len(results["items"]) < batch_size:
+                    break
+
+                offset += batch_size
+
+            return playlists
+
+        except Exception as e:
+            print(f"Error getting user playlists: {e}")
+            return []
+
     def get_playback_state(self) -> Optional[Dict[str, Any]]:
         """
         Get detailed playback state information.

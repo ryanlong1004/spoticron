@@ -282,6 +282,180 @@ def top_artists(time_range, limit):
 
 
 @cli.command()
+@click.option("--limit", "-l", default=50, help="Number of playlists to show")
+def playlists(limit):
+    """Show your Spotify playlists."""
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Getting your playlists...", total=None)
+
+        try:
+            collector = LiveStatsCollector()
+            playlists_data = collector.get_user_playlists(limit)
+
+            progress.remove_task(task)
+            console.print()  # Clean line break
+
+            if playlists_data:
+                table = Table(title=f"📚 Your Playlists ({len(playlists_data)} total)")
+                table.add_column("#", style="cyan", width=4)
+                table.add_column("Name", style="magenta")
+                table.add_column("Tracks", style="green", width=8)
+                table.add_column("Owner", style="blue")
+                table.add_column("Type", style="yellow", width=12)
+
+                for i, playlist in enumerate(playlists_data, 1):
+                    playlist_type = []
+                    if playlist.get("public"):
+                        playlist_type.append("Public")
+                    if playlist.get("collaborative"):
+                        playlist_type.append("Collab")
+                    if not playlist_type:
+                        playlist_type.append("Private")
+
+                    table.add_row(
+                        str(i),
+                        playlist["name"],
+                        str(playlist["tracks_total"]),
+                        playlist["owner"],
+                        ", ".join(playlist_type),
+                    )
+
+                console.print(table)
+                console.print(
+                    "\n💡 [dim]Tip: Use 'spoticron.py playlist-tracks <playlist_id>' to see tracks in a playlist[/dim]"
+                )
+                console.print(
+                    "💡 [dim]Tip: Use 'spoticron.py playlist-tracks' (no ID) to see your Liked Songs[/dim]"
+                )
+            else:
+                console.print("🔇 No playlists found", style="yellow")
+
+        except Exception as e:
+            progress.remove_task(task)
+            console.print(f"❌ Error getting playlists: {e}", style="red")
+
+
+@cli.command()
+@click.argument("playlist_id", required=False)
+@click.option(
+    "--limit", "-l", type=int, help="Maximum number of tracks to show (default: all)"
+)
+@click.option("--export", "-e", is_flag=True, help="Export tracks to JSON file")
+@click.option("--detailed", "-d", is_flag=True, help="Show detailed track information")
+def playlist_tracks(playlist_id, limit, export, detailed):
+    """Show all tracks from a playlist.
+
+    If no PLAYLIST_ID is provided, shows your Liked Songs.
+    To get a playlist ID, use the 'playlists' command or copy it from Spotify.
+    """
+    playlist_name = "Liked Songs" if not playlist_id else f"Playlist {playlist_id}"
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+    ) as progress:
+        task = progress.add_task(f"Getting tracks from {playlist_name}...", total=None)
+
+        try:
+            collector = LiveStatsCollector()
+            tracks = collector.get_playlist_tracks(playlist_id, limit)
+
+            progress.remove_task(task)
+            console.print()  # Clean line break
+
+            if tracks:
+                # Export if requested
+                if export:
+                    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                    filename = f"playlist_tracks_{timestamp}.json"
+                    export_dir = Path("data/exports")
+                    export_dir.mkdir(parents=True, exist_ok=True)
+                    export_path = export_dir / filename
+
+                    with open(export_path, "w") as f:
+                        json.dump(
+                            {
+                                "playlist_id": playlist_id,
+                                "playlist_name": playlist_name,
+                                "total_tracks": len(tracks),
+                                "exported_at": datetime.now().isoformat(),
+                                "tracks": tracks,
+                            },
+                            f,
+                            indent=2,
+                        )
+                    console.print(
+                        f"✅ Exported {len(tracks)} tracks to {export_path}",
+                        style="green",
+                    )
+
+                # Display tracks
+                table_title = f"🎵 {playlist_name} ({len(tracks)} tracks)"
+                table = Table(title=table_title)
+                table.add_column("#", style="cyan", width=4)
+                table.add_column("Track", style="magenta")
+                table.add_column("Artist(s)", style="green")
+
+                if detailed:
+                    table.add_column("Album", style="blue")
+                    table.add_column("Duration", style="yellow", width=8)
+                    table.add_column("Popularity", style="red", width=10)
+
+                for i, track in enumerate(tracks, 1):
+                    row = [
+                        str(i),
+                        track["name"],
+                        ", ".join(track["artists"]),
+                    ]
+
+                    if detailed:
+                        duration = format_duration_simple(track["duration_ms"])
+                        row.extend(
+                            [
+                                track["album"],
+                                duration,
+                                f"{track['popularity']}/100",
+                            ]
+                        )
+
+                    table.add_row(*row)
+
+                console.print(table)
+
+                # Show summary stats
+                total_duration_ms = sum(track["duration_ms"] for track in tracks)
+                total_duration_hours = total_duration_ms / (1000 * 60 * 60)
+
+                summary = f"""
+[bold]Summary:[/bold]
+• Total tracks: {len(tracks):,}
+• Total duration: {total_duration_hours:.1f} hours
+• Average popularity: {sum(t['popularity'] for t in tracks) / len(tracks):.1f}/100
+• Explicit tracks: {sum(1 for t in tracks if t['explicit'])}
+"""
+                console.print(Panel(summary.strip(), border_style="green"))
+
+            else:
+                console.print(f"🔇 No tracks found in {playlist_name}", style="yellow")
+
+        except Exception as e:
+            progress.remove_task(task)
+            console.print(f"❌ Error getting playlist tracks: {e}", style="red")
+
+
+def format_duration_simple(duration_ms: int) -> str:
+    """Format duration in milliseconds to MM:SS."""
+    minutes = duration_ms // 60000
+    seconds = (duration_ms % 60000) // 1000
+    return f"{minutes}:{seconds:02d}"
+
+
+@cli.command()
 @click.option("--export", "-e", is_flag=True, help="Export analysis to JSON file")
 def analyze(export):
     """Perform comprehensive historical analysis of your listening habits."""

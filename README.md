@@ -17,7 +17,8 @@ A comprehensive command-line tool for analyzing your Spotify listening habits wi
 - 🎵 **Live Stats**: Get real-time information about currently playing tracks
 - 🕒 **Recent Activity**: View your recently played tracks
 - 🏆 **Top Lists**: Analyze your top tracks and artists across different time periods
-- 📊 **Historical Analysis**: Deep dive into your listening evolution and patterns
+- � **Playlist Management**: View all your playlists and browse tracks in any playlist, including Liked Songs
+- �📊 **Historical Analysis**: Deep dive into your listening evolution and patterns
 - 🔍 **Discovery Patterns**: Track your music discovery habits
 - 💾 **Data Export**: Export your listening data for further analysis
 - 🎧 **Live Monitoring**: Real-time monitoring of your listening activity
@@ -226,6 +227,68 @@ python spoticron.py top-tracks --time-range short_term
 - `short_term`: Last 4 weeks (your current favorites)
 - `medium_term`: Last 6 months (recent trends)
 - `long_term`: All time (your classics)
+</details>
+
+**Browse your playlists**:
+
+```bash
+python spoticron.py playlists
+```
+
+<details>
+<summary>📋 Example Output</summary>
+
+```
+📚 Your Playlists (25 total)
+┏━━━━┳━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━┓
+┃ #  ┃ Name               ┃ Tracks ┃ Owner      ┃ Type       ┃
+┡━━━━╇━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━━━┩
+│ 1  │ My Favorites       │ 234    │ You        │ Private    │
+│ 2  │ Workout Mix        │ 89     │ You        │ Public     │
+│ 3  │ Chill Vibes        │ 156    │ You        │ Public     │
+└────┴────────────────────┴────────┴────────────┴────────────┘
+```
+
+</details>
+
+**View all tracks in a playlist (including Liked Songs)**:
+
+```bash
+# View your Liked Songs
+python spoticron.py playlist-tracks
+
+# View tracks from a specific playlist
+python spoticron.py playlist-tracks <playlist_id>
+
+# Show detailed information
+python spoticron.py playlist-tracks --detailed
+
+# Export to JSON file
+python spoticron.py playlist-tracks --export
+```
+
+<details>
+<summary>📋 Example Output</summary>
+
+```
+🎵 Liked Songs (1,234 tracks)
+┏━━━━┳━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━┓
+┃ #  ┃ Track              ┃ Artist(s)          ┃
+┡━━━━╇━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━┩
+│ 1  │ Bohemian Rhapsody  │ Queen              │
+│ 2  │ Stairway to Heaven │ Led Zeppelin       │
+│ 3  │ Hotel California   │ Eagles             │
+└────┴────────────────────┴────────────────────┘
+
+Summary:
+• Total tracks: 1,234
+• Total duration: 82.3 hours
+• Average popularity: 76.5/100
+• Explicit tracks: 89
+```
+
+**Tip**: Use the `playlists` command to find playlist IDs, or copy them from Spotify URLs.
+
 </details>
 
 ### Advanced Features
