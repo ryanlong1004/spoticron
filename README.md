@@ -291,6 +291,7 @@ Summary:
 ```
 
 **Tips**:
+
 - Use the `playlists` command to find playlist IDs, or copy them from Spotify URLs
 - CSV exports include: Track name, Artists, Album, Duration, Popularity, Explicit flag, Date added, and Spotify URL
 - CSV files can be opened in Excel, Google Sheets, or any spreadsheet application
